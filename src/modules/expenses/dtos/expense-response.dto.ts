@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Currency } from 'src/common/enums/currency.enum';
 import { PaymentMethod } from 'src/common/enums/payment-method.enum';
+import { CategoryNestedDto } from 'src/modules/categories/dtos/category-nested.dto';
 
 export class ExpenseCategoryDto {
   @ApiProperty({
@@ -66,16 +67,17 @@ export class ExpenseResponseDto {
   })
   updated_at!: Date;
 
-  @ApiPropertyOptional({
-    type: ExpenseCategoryDto,
+   @ApiProperty({
+    type: CategoryNestedDto,
     nullable: true,
-    description: 'Null if category was deleted',
+    description: 'Expense category. Null if category was deleted',
   })
-  category?: ExpenseCategoryDto | null;
+  category!: CategoryNestedDto | null;
 
   @ApiPropertyOptional({
     example: 'Quick lunch after work',
     nullable: true,
+    description: 'Optional expense note'
   })
   note?: string | null;
 }
