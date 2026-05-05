@@ -1,22 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+
+import { GlobalValidationPipe } from './common/pipes/validation.pipe';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
-    //validation pip stuff
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        transform: true,
-      }),
-    );
-
     //global prefix
-    app.setGlobalPrefix('api/v1')
+    app.setGlobalPrefix('api/v1');
+
+    //validation
+    app.useGlobalPipes(GlobalValidationPipe);
+
+    //error handling
+    app.useGlobalFilters(new HttpExceptionFilter());
+
+    //response shaping
+    app.useGlobalInterceptors(new TransformInterceptor());
 
     // swagger
     const config = new DocumentBuilder()
@@ -26,9 +29,11 @@ async function bootstrap() {
     .addBearerAuth()
     .build()
 
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
 
     const port = process.env.PORT || 3000;
     await app.listen(port);
+}
 
-  }
 bootstrap();

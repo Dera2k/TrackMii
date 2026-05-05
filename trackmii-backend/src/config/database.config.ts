@@ -11,8 +11,8 @@ export const getDatabaseConfig = (
   username: configService.get('DB_USERNAME'),
   password: configService.get('DB_PASSWORD'),
   database: configService.get('DB_DATABASE'),
-  entities: [__dirname + '/../database/entities/*.entity{.ts,.js}'],
+  autoLoadEntities: true,
   migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
   synchronize: configService.get('NODE_ENV') === 'development',
-  logging: configService.get('NODE_ENV') === 'development',
+  logging: false //configService.get('NODE_ENV') === 'development',
 });
