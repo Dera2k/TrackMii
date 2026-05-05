@@ -6,12 +6,19 @@ import { ExpensesModule } from './modules/expenses/expenses.module';
 import { BudgetsModule } from './modules/budgets/budgets.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
-import { ExportsModule } from './exports/exports.module';
+import { ExportsModule } from './modules/exports/exports.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { getDatabaseConfig } from './config/database.config';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
+import { AuthService } from './modules/auth/auth.service';
+import { UsersService } from './modules/users/users.service';
+import { NotificationsService } from './modules/notifications/notifications.service';
+import { AnalyticsService } from './modules/analytics/analytics.service';
+import { ExportsService } from './modules/exports/exports.service';
+import { CategoriesService } from './modules/categories/categories.service';
+import { ExpensesService } from './modules/expenses/expenses.service';
+import { BudgetsService } from './modules/budgets/budgets.service';
 @Module({
   imports: [
     // Global config
@@ -29,8 +36,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     // Rate limiting
     ThrottlerModule.forRoot([
       {
-        ttl: 60000, // 1 minute
-        limit: 100, // requests per minute
+        ttl: 60000, //1 minute
+        limit: 100, //requests per minute
       },
     ]),
 
@@ -44,5 +51,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     NotificationsModule,
     ExportsModule,
   ],
+  providers: [],
 })
 export class AppModule {}
