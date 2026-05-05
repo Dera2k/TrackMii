@@ -6,8 +6,8 @@ import { UpdateExpenseDto } from "./dtos/update-expense.dto";
 import { ExpenseQueryDto } from "./dtos/expense-query.dto";
 import { BulkDeleteDto } from "./dtos/bulk-delete.dto";
 import { ExpenseResponseDto } from "./dtos/expense-response.dto";
-import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
-import { CurrentUser } from "src/common/decorators/current-user.decorator";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 
 @ApiTags('Expenses')
 @ApiBearerAuth()

@@ -3,7 +3,7 @@ import { Repository } from "typeorm";
 import { User } from "./user.entity";
 import { UpdateProfileDto } from "./dtos/update-profile.dto";
 import { UpdatePreferencesDto } from "./dtos/update-preferences.dto";
-import { UserResponseDto } from "./user-response.dto";
+import { UserResponseDto } from "./dtos/user-response.dto";
 
 import { Injectable } from "@nestjs/common";
 import { NotFoundException } from "@nestjs/common";

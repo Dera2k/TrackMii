@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Currency } from 'src/common/enums/currency.enum';
-import { PaymentMethod } from 'src/common/enums/payment-method.enum';
-import { CategoryNestedDto } from 'src/modules/categories/dtos/category-nested.dto';
+import { Currency } from '../../../common/enums/currency.enum';
+import { PaymentMethod } from '../../../common/enums/payment-method.enum';
+import { CategoryNestedDto } from '../../categories/dtos/category-nested.dto';
 
 export class ExpenseCategoryDto {
   @ApiProperty({

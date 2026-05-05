@@ -8,8 +8,8 @@ import {
 } from 'class-validator';
 
 
-import { Currency } from 'src/common/enums/currency.enum';
-import { PaymentMethod } from 'src/common/enums/payment-method.enum';
+import { Currency } from '../../../common/enums/currency.enum';
+import { PaymentMethod } from '../../../common/enums/payment-method.enum';
 
 export class CreateExpenseDto {
   @ApiProperty({

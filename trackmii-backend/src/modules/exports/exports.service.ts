@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, Between } from "typeorm";
-import { Expense } from "src/modules/expenses/expense.entity";
-import { ExportQueryDto } from "./dtos/export-query.dto";
+import { Expense } from "../expenses/expense.entity";
+import { ExportQueryDto } from "../exports/dtos/export-query.dto";
 @Injectable()
 export class ExportsService {
   constructor(

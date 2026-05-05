@@ -8,7 +8,7 @@ import { UpdateBudgetDto } from "./dtos/update-budget.dto";
 import { BudgetQueryDto } from "./dtos/budget-query.dto";
 import { BudgetResponseDto } from "./dtos/budget-response.dto";
 import { NotificationsService } from "../notifications/notifications.service";
-import { NotificationType } from "src/common/enums/notification-type.enum";
+import { NotificationType } from "../../common/enums/notification-type.enum";
 
 @Injectable()
 export class BudgetsService {

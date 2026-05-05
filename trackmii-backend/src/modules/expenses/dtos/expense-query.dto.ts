@@ -3,7 +3,7 @@ import { IsOptional,  IsUUID,  IsNumber,  IsString,  IsEnum } from 'class-valida
 
 
 import { Type } from 'class-transformer';
-import { PaymentMethod } from 'src/common/enums/payment-method.enum';
+import { PaymentMethod } from '../../../common/enums/payment-method.enum';
 
 export class ExpenseQueryDto {
   @ApiPropertyOptional({

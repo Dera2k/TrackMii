@@ -1,4 +1,4 @@
-import { NotificationType } from "src/common/enums/notification-type.enum";
+import { NotificationType } from "../../common/enums/notification-type.enum"
 import { Notification } from "./notification.entity";
 import { NotificationResponseDto } from "./dtos/notification-response.dto";
 import { Repository, In } from "typeorm";

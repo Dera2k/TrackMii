@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Currency } from 'src/common/enums/currency.enum';
-import { CategoryNestedDto } from 'src/modules/categories/dtos/category-nested.dto';
+import { Currency } from '../../../common/enums/currency.enum';
+import { CategoryNestedDto } from '../../categories/dtos/category-nested.dto';
 export class BudgetResponseDto {
   @ApiProperty({
     example: '550e8400-e29b-41d4-a716-446655440010',

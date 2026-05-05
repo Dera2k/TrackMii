@@ -4,8 +4,8 @@ import { DashboardStatsDto } from "./dtos/dashboard-stats.dto";
 import { MonthlyAnalyticsDto } from "./dtos/monthly-analytics.dto";
 import { WeeklyAnalyticsDto } from "./dtos/weekly-analytics.dto";
 import { CategoryBreakdownDto } from "./dtos/category-breakdown.dto";
-import { CurrentUser } from "src/common/decorators/current-user.decorator";
-import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { Controller, Get, Query, UseGuards } from "@nestjs/common";
 import { ApiTags,ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 

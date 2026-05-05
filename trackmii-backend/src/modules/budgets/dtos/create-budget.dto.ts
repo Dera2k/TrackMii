@@ -7,7 +7,7 @@ import {
   Max,
 } from 'class-validator';
 
-import { Currency } from 'src/common/enums/currency.enum';
+import { Currency } from '../../../common/enums/currency.enum';
 
 export class CreateBudgetDto {
   @ApiProperty({

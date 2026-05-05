@@ -5,8 +5,8 @@ import { CreateBudgetDto } from "./dtos/create-budget.dto";
 import { UpdateBudgetDto } from "./dtos/update-budget.dto";
 import { BudgetQueryDto } from "./dtos/budget-query.dto";
 import { BudgetResponseDto } from "./dtos/budget-response.dto";
-import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
-import { CurrentUser } from "src/common/decorators/current-user.decorator";
+import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 
 @ApiTags('Budgets')
 @ApiBearerAuth()

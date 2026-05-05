@@ -17,8 +17,8 @@ import {
 import type { Response } from 'express';
 import { ExportsService } from './exports.service';
 import { ExportQueryDto } from './dtos/export-query.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common//decorators/current-user.decorator';
 
 
 

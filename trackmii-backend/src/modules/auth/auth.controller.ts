@@ -4,7 +4,7 @@ import { LoginDto } from "./dtos/login.dto";
 import { ForgotPasswordDto } from "./dtos/forgot-password.dto";
 import { ResetPasswordDto } from "./dtos/reset-password.dto";
 import { AuthResponseDto } from "./auth-response.dto";
-import { Public } from "src/common/decorators/public.decorator";
+import { Public } from "../../common/decorators/public.decorator";
 import { Controller, Post, Body, HttpCode, HttpStatus } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 
