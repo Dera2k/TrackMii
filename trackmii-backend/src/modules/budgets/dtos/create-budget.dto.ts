@@ -5,6 +5,7 @@ import {
   IsOptional,
   Min,
   Max,
+  IsEnum
 } from 'class-validator';
 
 import { Currency } from '../../../common/enums/currency.enum';
@@ -19,7 +20,7 @@ export class CreateBudgetDto {
   amount!: number;
 
 
-
+  @IsEnum(Currency)
   @ApiProperty({
     enum: Currency,
     example: Currency.NGN,

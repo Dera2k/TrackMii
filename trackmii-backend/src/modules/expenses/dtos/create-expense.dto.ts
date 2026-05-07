@@ -5,6 +5,7 @@ import {
   IsUUID,
   IsOptional,
   IsDateString,
+  IsEnum,
 } from 'class-validator';
 
 
@@ -27,7 +28,7 @@ export class CreateExpenseDto {
   amount!: number;
 
 
-
+  @IsEnum(Currency)
   @ApiProperty({
     enum: Currency,
     example: Currency.NGN,
@@ -43,7 +44,7 @@ export class CreateExpenseDto {
   category_id!: string;
 
 
-
+  @IsEnum(PaymentMethod)
   @ApiProperty({
     enum: PaymentMethod,
     example: PaymentMethod.CASH,
