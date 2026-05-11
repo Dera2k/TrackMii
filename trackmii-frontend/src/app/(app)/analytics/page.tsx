@@ -77,7 +77,10 @@ export default function AnalyticsPage() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: number) => formatCurrency(value, currency)}
+                        formatter={(value) => {
+                          if (value == null) return ""
+                          return formatCurrency(Number(value), currency)
+                        }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -125,7 +128,12 @@ export default function AnalyticsPage() {
                   <BarChart data={monthlyChartData}>
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v: number) => formatCurrency(v, currency)} />
+                    <Tooltip
+                      formatter={(value) => {
+                        if (value == null) return ""
+                        return formatCurrency(Number(value), currency)
+                      }}
+                    />
                     <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -148,7 +156,12 @@ export default function AnalyticsPage() {
                   <LineChart data={weeklyChartData}>
                     <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(v: number) => formatCurrency(v, currency)} />
+                    <Tooltip
+                      formatter={(value) => {
+                        if (value == null) return ""
+                        return formatCurrency(Number(value), currency)
+                      }}
+                    />
                     <Line
                       type="monotone"
                       dataKey="total"
