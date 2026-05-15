@@ -1,5 +1,5 @@
 "use client"
-
+ 
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useDashboardStats } from "@/hooks/queries/useAnalytics"
@@ -12,25 +12,40 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
 import { EmptyState } from "@/components/common/EmptyState"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
-
+ 
 export default function DashboardPage() {
   const router = useRouter()
   const { user } = useAuth()
   const currency = user?.currency ?? "NGN"
-
+ 
+  // All hooks at the top — before ANY conditionals
   const { data: stats, isLoading: statsLoading } = useDashboardStats()
   const { data: expensesData, isLoading: expensesLoading } = useExpenses({ limit: 6 })
   const { data: budgets, isLoading: budgetsLoading } = useCurrentMonthBudgets()
-
+ 
+  const recent = expensesData?.data ?? []
+ 
+  const chartData = useMemo(() => {
+    const map: Record<string, { name: string; value: number; color: string }> = {}
+    for (const e of recent) {
+      const key = e.category?.name ?? "Uncategorized"
+      if (!map[key]) map[key] = { name: key, value: 0, color: e.category?.color ?? "#999" }
+      map[key].value += e.amount
+    }
+    return Object.values(map)
+  }, [recent])
+ 
+  // Now compute derived state
   const overall = budgets?.find((b) => !b.category_id)
   const budgetPct = overall ? Math.round(overall.usage_percentage) : 0
   const budgetStatus = budgetPct >= 100 ? "hsl(var(--destructive))" : budgetPct >= 80 ? "#eab308" : "hsl(var(--primary))"
-
+ 
   const monthLabel = new Date().toLocaleString("default", { month: "long", year: "numeric" })
-
+ 
   const isLoading = statsLoading || expensesLoading || budgetsLoading
   const hasData = (expensesData?.data?.length ?? 0) > 0 || (budgets?.length ?? 0) > 0
-
+ 
+  // NOW you can have conditionals
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -45,7 +60,7 @@ export default function DashboardPage() {
       </div>
     )
   }
-
+ 
   if (!hasData) {
     return (
       <div className="space-y-6">
@@ -64,26 +79,14 @@ export default function DashboardPage() {
       </div>
     )
   }
-
-  const recent = expensesData?.data ?? []
-
-  const chartData = useMemo(() => {
-    const map: Record<string, { name: string; value: number; color: string }> = {}
-    for (const e of recent) {
-      const key = e.category?.name ?? "Uncategorized"
-      if (!map[key]) map[key] = { name: key, value: 0, color: e.category?.color ?? "#999" }
-      map[key].value += e.amount
-    }
-    return Object.values(map)
-  }, [recent])
-
+ 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground text-sm mt-1">Your financial overview</p>
       </div>
-
+ 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-card rounded-xl border border-border p-5">
@@ -93,7 +96,7 @@ export default function DashboardPage() {
           <p className="text-2xl font-bold">{formatCurrency(stats?.total_spent_all_time ?? 0, currency)}</p>
           <p className="text-xs text-muted-foreground mt-1">All time</p>
         </div>
-
+ 
         <div className="bg-card rounded-xl border border-border p-5">
           <div className="flex items-center gap-2 text-muted-foreground mb-2">
             <TrendingUp className="w-5 h-5" /><span className="text-sm">This Month</span>
@@ -101,7 +104,7 @@ export default function DashboardPage() {
           <p className="text-2xl font-bold">{formatCurrency(stats?.current_month_spent ?? 0, currency)}</p>
           <p className="text-xs text-muted-foreground mt-1">{monthLabel}</p>
         </div>
-
+ 
         {overall ? (
           <div className="bg-card rounded-xl border border-border p-5 flex items-center gap-4">
             <div className="relative w-16 h-16 shrink-0">
@@ -131,7 +134,7 @@ export default function DashboardPage() {
           </button>
         )}
       </div>
-
+ 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Category chart */}
         <div className="bg-card rounded-xl border border-border p-5 lg:col-span-1">
@@ -163,7 +166,7 @@ export default function DashboardPage() {
             </>
           )}
         </div>
-
+ 
         {/* Recent expenses */}
         <div className="bg-card rounded-xl border border-border p-5 lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
@@ -195,7 +198,7 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
-
+ 
       {overall && (
         <div className="bg-card rounded-xl border border-border p-5">
           <h2 className="text-sm font-semibold mb-3">Budget Health</h2>

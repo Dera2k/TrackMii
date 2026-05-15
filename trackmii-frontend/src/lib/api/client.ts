@@ -1,14 +1,10 @@
 import { clearToken, getToken } from "@/lib/auth"
 
-interface ApiClientOptions extends RequestInit {
-  skipAuth?: boolean
-}
-
 export class ApiError extends Error {
   constructor(
     public statusCode: number,
     message: string,
-    public data?: any
+    public errors?: string[]
   ) {
     super(message)
     this.name = "ApiError"
@@ -17,39 +13,40 @@ export class ApiError extends Error {
 
 export async function apiClient<T>(
   url: string,
-  options: ApiClientOptions = {}
+  options: RequestInit & { skipAuth?: boolean } = {}
 ): Promise<T> {
   const { skipAuth, ...fetchOptions } = options
-
   const token = getToken()
   const headers = new Headers(fetchOptions.headers ?? {})
 
-  if (!skipAuth && token) {
+  headers.set("Content-Type", "application/json")
+
+  if (token && !skipAuth) {
     headers.set("Authorization", `Bearer ${token}`)
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}${url}`,
-    {
-      ...fetchOptions,
-      headers,
-    }
-  )
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+    ...fetchOptions,
+    headers,
+  })
 
-  const data = await response.json()
+  const wrapper = await response.json()
 
   if (!response.ok) {
     if (response.status === 401) {
       clearToken()
-      window.location.href = "/login"
+      if (typeof window !== "undefined") {
+        window.location.href = "/login"
+      }
     }
 
+    const errors = wrapper.error instanceof Array ? wrapper.error : undefined
     throw new ApiError(
       response.status,
-      data.message || "Request failed",
-      data
+      wrapper.message || "Request failed",
+      errors
     )
   }
 
-  return data.data ?? data
+  return wrapper.data ?? wrapper
 }
