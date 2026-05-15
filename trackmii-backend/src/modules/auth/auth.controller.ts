@@ -5,8 +5,8 @@ import { ForgotPasswordDto } from "./dtos/forgot-password.dto";
 import { ResetPasswordDto } from "./dtos/reset-password.dto";
 import { AuthResponseDto } from "./auth-response.dto";
 import { Public } from "../../common/decorators/public.decorator";
-import { Controller, Post, Body, HttpCode, HttpStatus } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { Controller, Post, Body, HttpCode, HttpStatus, Get, Req } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from "@nestjs/swagger";
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -48,7 +48,20 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-
+// @Get('me')
+//   @ApiBearerAuth()
+//   @ApiOperation({ summary: 'Get current user profile' })
+//   @ApiResponse({
+//     status: 200,
+//     description: 'Current user profile',
+//   })
+//   @ApiResponse({
+//     status: 401,
+//     description: 'Unauthorized',
+//   })
+//   async getMe(@Req() req: any) {
+//     return req.user;
+//   }
 
   @Public()
   @Post('forgot-password')
