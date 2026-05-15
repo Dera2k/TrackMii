@@ -1,27 +1,13 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { useUpdateProfile, useUpdatePreferences, useUpdatePassword } from "@/hooks/queries/useUser"
 import { useLogout } from "@/hooks/queries/useAuth"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useTheme } from "next-themes"
-import { useState, useEffect } from "react"
-import { LogOut } from "lucide-react"
+import { Moon, Sun, Download, LogOut } from "lucide-react"
 import { CURRENCY_SYMBOLS } from "@/lib/constants"
+import type { Currency } from "@/lib/types"
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -34,7 +20,7 @@ export default function SettingsPage() {
 
   const [name, setName] = useState(user?.name ?? "")
   const [email, setEmail] = useState(user?.email ?? "")
-  const [currency, setCurrency] = useState(user?.currency ?? "NGN")
+  const [currency, setCurrency] = useState<Currency>(user?.currency ?? "NGN")
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -47,194 +33,122 @@ export default function SettingsPage() {
     }
   }, [user])
 
-  const handleProfileSave = () => {
-    updateProfile.mutate({ name, email })
-  }
-
-  const handleCurrencySave = (value: string) => {
-    setCurrency(value as typeof currency)
-    updatePreferences.mutate({ currency: value as typeof currency })
-  }
-
-  const handlePasswordSave = () => {
-    if (newPassword !== confirmPassword) return
-    updatePassword.mutate({ current_password: currentPassword, new_password: newPassword })
-    setCurrentPassword("")
-    setNewPassword("")
-    setConfirmPassword("")
-  }
-
-  const initials = user?.name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2) ?? "TM"
-
   return (
-    <div className="space-y-6 max-w-xl">
-      <Tabs defaultValue="profile">
-        <TabsList className="w-full">
-          <TabsTrigger value="profile" className="flex-1">Profile</TabsTrigger>
-          <TabsTrigger value="preferences" className="flex-1">Preferences</TabsTrigger>
-          <TabsTrigger value="security" className="flex-1">Security</TabsTrigger>
-        </TabsList>
+    <div className="space-y-6 max-w-2xl">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground text-sm mt-1">Manage your profile and preferences</p>
+      </div>
 
-        {/* Profile */}
-        <TabsContent value="profile" className="mt-4 space-y-4">
-          <Card>
-            <CardContent className="pt-6 space-y-6">
-              <div className="flex flex-col items-center gap-3">
-                <Avatar className="w-20 h-20">
-                  <AvatarFallback className="text-xl bg-primary text-primary-foreground">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <p className="text-sm text-muted-foreground">
-                  {user?.is_email_verified ? "Verified" : "Email not verified"}
-                </p>
-              </div>
+      {/* Profile */}
+      <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+        <h2 className="text-sm font-semibold">Profile</h2>
+        <div>
+          <label className="text-sm text-muted-foreground mb-1 block">Name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" />
+        </div>
+        <div>
+          <label className="text-sm text-muted-foreground mb-1 block">Email</label>
+          <input value={email} onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" />
+        </div>
+        <button
+          onClick={() => updateProfile.mutate({ name, email })}
+          disabled={updateProfile.isPending}
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
+        >
+          {updateProfile.isPending ? "Saving..." : "Update Profile"}
+        </button>
+      </div>
 
-              <Separator />
-
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="name">Full name</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your name"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Your email"
-                  />
-                </div>
-                <Button
-                  className="w-full"
-                  onClick={handleProfileSave}
-                  disabled={updateProfile.isPending}
-                >
-                  {updateProfile.isPending ? "Saving..." : "Save changes"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Separator />
-
-          <Button
-            variant="destructive"
-            className="w-full"
-            onClick={logout}
-          >
-            <LogOut size={16} />
-            Log out
-          </Button>
-        </TabsContent>
-
-        {/* Preferences */}
-        <TabsContent value="preferences" className="mt-4">
-          <Card>
-            <CardContent className="pt-6 space-y-6">
-              <div className="space-y-1.5">
-                <Label>Currency</Label>
-                <Select value={currency} onValueChange={handleCurrencySave}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(CURRENCY_SYMBOLS).map(([code, symbol]) => (
-                      <SelectItem key={code} value={code}>
-                        {symbol} {code}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Dark mode</p>
-                  <p className="text-xs text-muted-foreground">Switch appearance</p>
-                </div>
-                <Switch
-                  checked={theme === "dark"}
-                  onCheckedChange={(checked) => {
-                    setTheme(checked ? "dark" : "light")
-                    updatePreferences.mutate({ dark_mode: checked })
-                  }}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Security */}
-        <TabsContent value="security" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm">Change password</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="current">Current password</Label>
-                <Input
-                  id="current"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="new">New password</Label>
-                <Input
-                  id="new"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="confirm">Confirm new password</Label>
-                <Input
-                  id="confirm"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
-              </div>
-              {newPassword && confirmPassword && newPassword !== confirmPassword && (
-                <p className="text-xs text-destructive">Passwords do not match</p>
-              )}
-              <Button
-                className="w-full"
-                onClick={handlePasswordSave}
-                disabled={
-                  updatePassword.isPending ||
-                  !currentPassword ||
-                  !newPassword ||
-                  newPassword !== confirmPassword
-                }
+      {/* Preferences */}
+      <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+        <h2 className="text-sm font-semibold">Preferences</h2>
+        <div>
+          <label className="text-sm text-muted-foreground mb-2 block">Default Currency</label>
+          <div className="flex gap-3">
+            {(Object.keys(CURRENCY_SYMBOLS) as Currency[]).map((c) => (
+              <button key={c}
+                onClick={() => { setCurrency(c); updatePreferences.mutate({ currency: c }) }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${currency === c ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
               >
-                {updatePassword.isPending ? "Updating..." : "Update password"}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                {CURRENCY_SYMBOLS[c]} {c}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">Dark Mode</p>
+            <p className="text-xs text-muted-foreground">Switch between light and dark theme</p>
+          </div>
+          <button
+            onClick={() => {
+              const next = theme === "dark" ? "light" : "dark"
+              setTheme(next)
+              updatePreferences.mutate({ dark_mode: next === "dark" })
+            }}
+            className={`w-12 h-7 rounded-full relative transition-colors ${theme === "dark" ? "bg-primary" : "bg-muted"}`}
+          >
+            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-transform flex items-center justify-center ${theme === "dark" ? "translate-x-5" : "translate-x-0.5"}`}>
+              {theme === "dark" ? <Moon className="w-3 h-3" /> : <Sun className="w-3 h-3" />}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Password */}
+      <div className="bg-card rounded-xl border border-border p-6 space-y-4">
+        <h2 className="text-sm font-semibold">Change Password</h2>
+        <div>
+          <label className="text-sm text-muted-foreground mb-1 block">Current Password</label>
+          <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" placeholder="••••••••" />
+        </div>
+        <div>
+          <label className="text-sm text-muted-foreground mb-1 block">New Password</label>
+          <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" placeholder="••••••••" />
+        </div>
+        <div>
+          <label className="text-sm text-muted-foreground mb-1 block">Confirm Password</label>
+          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" placeholder="••••••••" />
+        </div>
+        {newPassword && confirmPassword && newPassword !== confirmPassword && (
+          <p className="text-xs text-destructive">Passwords do not match</p>
+        )}
+        <button
+          onClick={() => {
+            if (newPassword !== confirmPassword) return
+            updatePassword.mutate({ current_password: currentPassword, new_password: newPassword })
+            setCurrentPassword(""); setNewPassword(""); setConfirmPassword("")
+          }}
+          disabled={updatePassword.isPending || !currentPassword || !newPassword || newPassword !== confirmPassword}
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
+        >
+          {updatePassword.isPending ? "Updating..." : "Update Password"}
+        </button>
+      </div>
+
+      {/* Export */}
+      <div className="bg-card rounded-xl border border-border p-6">
+        <h2 className="text-sm font-semibold mb-2">Data Export</h2>
+        <p className="text-sm text-muted-foreground mb-4">Download all your expense data as CSV</p>
+        <button
+          onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}/export/csv`, "_blank")}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors"
+        >
+          <Download className="w-4 h-4" /> Export to CSV
+        </button>
+      </div>
+
+      {/* Logout */}
+      <button onClick={logout}
+        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-destructive text-destructive text-sm font-medium hover:bg-destructive/10 transition-colors">
+        <LogOut className="w-4 h-4" /> Log out
+      </button>
     </div>
   )
 }

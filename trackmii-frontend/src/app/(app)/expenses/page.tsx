@@ -1,53 +1,32 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { useExpenses } from "@/hooks/queries/useExpenses"
+import { useExpenses, useDeleteExpense } from "@/hooks/queries/useExpenses"
 import { useCategories } from "@/hooks/queries/useCategories"
-import { useDeleteExpense } from "@/hooks/queries/useExpenses"
 import { useAuth } from "@/lib/contexts/auth-context"
-import { formatCurrency, formatDate } from "@/lib/utils"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Search, Trash2, Pencil, Receipt, ChevronLeft, ChevronRight } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
+import { Search, SlidersHorizontal, Pencil, Trash2, Receipt } from "lucide-react"
 import { AddExpenseModal } from "@/components/expenses/AddExpenseModal"
-import type { Expense } from "@/lib/types"
+import { EmptyState } from "@/components/common/EmptyState"
+import { Skeleton } from "@/components/ui/skeleton"
 import { PAYMENT_METHOD_LABELS } from "@/lib/constants"
+import type { Expense } from "@/lib/types"
 
 export default function ExpensesPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { user } = useAuth()
 
-  const [search, setSearch] = useState("")
-  const [categoryId, setCategoryId] = useState("")
-  const [paymentMethod, setPaymentMethod] = useState("")
-  const [page, setPage] = useState(1)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editExpense, setEditExpense] = useState<Expense | null>(null)
-  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const page = Number(searchParams.get("page") ?? "1")
+  const search = searchParams.get("search") ?? ""
+  const categoryId = searchParams.get("category") ?? ""
+  const paymentMethod = searchParams.get("method") ?? ""
 
-  const { data: categories } = useCategories()
+  const [showFilters, setShowFilters] = useState(false)
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
+  const showModal = searchParams.get("add") === "true" || !!editingExpense
+
   const { data, isLoading } = useExpenses({
     page,
     limit: 20,
@@ -55,224 +34,170 @@ export default function ExpensesPage() {
     category_id: categoryId || undefined,
     payment_method: paymentMethod || undefined,
   })
+  const { data: categories } = useCategories()
   const deleteMutation = useDeleteExpense()
 
-  // Open modal from FAB (?add=true)
-  useEffect(() => {
-    if (searchParams.get("add") === "true") {
-      setModalOpen(true)
-      router.replace("/expenses")
-    }
-  }, [searchParams, router])
-
-  const handleDelete = async () => {
-    if (!deleteId) return
-    await deleteMutation.mutateAsync(deleteId)
-    setDeleteId(null)
+  const updateParams = (updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    Object.entries(updates).forEach(([k, v]) => v ? params.set(k, v) : params.delete(k))
+    params.set("page", "1")
+    router.push(`/expenses?${params.toString()}`)
   }
 
-  return (
-    <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex flex-col gap-3">
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search expenses..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="pl-9"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Select
-            value={categoryId}
-            onValueChange={(v) => { setCategoryId(v === "all" ? "" : v); setPage(1) }}
-          >
-            <SelectTrigger className="flex-1 text-sm">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
-              {categories?.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: c.color }}
-                    />
-                    {c.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+  const closeModal = () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("add")
+    router.push(`/expenses?${params.toString()}`)
+    setEditingExpense(null)
+  }
 
-          <Select
-            value={paymentMethod}
-            onValueChange={(v) => { setPaymentMethod(v === "all" ? "" : v); setPage(1) }}
-          >
-            <SelectTrigger className="flex-1 text-sm">
-              <SelectValue placeholder="Payment" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All methods</SelectItem>
-              {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => (
-                <SelectItem key={k} value={k}>{v}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Delete this expense?")) {
+      await deleteMutation.mutateAsync(id)
+    }
+  }
+
+  const expenses = data?.data ?? []
+  const total = data?.meta?.total ?? 0
+  const totalPages = data?.meta?.totalPages ?? 1
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Expenses</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {isLoading ? "Loading..." : `${total} ${total === 1 ? "transaction" : "transactions"}`}
+          </p>
         </div>
+        <button
+          onClick={() => router.push("/expenses?add=true")}
+          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          Add Expense
+        </button>
       </div>
 
-      {/* Results count */}
-      {!isLoading && data && (
-        <p className="text-xs text-muted-foreground">
-          {data.meta.total} expense{data.meta.total !== 1 ? "s" : ""}
-        </p>
+      {/* Search & filters — only show if there are expenses */}
+      {(expenses.length > 0 || search || categoryId || paymentMethod) && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search expenses..."
+              defaultValue={search}
+              onChange={(e) => updateParams({ search: e.target.value })}
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+            />
+          </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border bg-card text-sm hover:bg-accent transition-colors"
+          >
+            <SlidersHorizontal className="w-4 h-4" /> Filters
+          </button>
+        </div>
+      )}
+
+      {showFilters && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          <select
+            value={categoryId}
+            onChange={(e) => updateParams({ category: e.target.value })}
+            className="flex-1 px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none"
+          >
+            <option value="">All categories</option>
+            {categories?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <select
+            value={paymentMethod}
+            onChange={(e) => updateParams({ method: e.target.value })}
+            className="flex-1 px-3 py-2.5 rounded-lg border border-border bg-card text-sm focus:outline-none"
+          >
+            <option value="">All methods</option>
+            {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>{v}</option>
+            ))}
+          </select>
+        </div>
       )}
 
       {/* List */}
       {isLoading ? (
-        <div className="space-y-3">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-xl" />
-          ))}
+        <div className="space-y-2">
+          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
         </div>
-      ) : data?.data.length === 0 ? (
-        <Card className="p-12 flex flex-col items-center justify-center text-center gap-3">
-          <Receipt size={40} className="text-muted-foreground" />
-          <div>
-            <p className="text-sm font-medium text-foreground">No expenses found</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {search || categoryId || paymentMethod
-                ? "Try adjusting your filters"
-                : "Tap + to add your first expense"}
-            </p>
-          </div>
-        </Card>
+      ) : expenses.length === 0 && !search ? (
+        <div className="bg-card rounded-xl border border-border">
+          <EmptyState
+            icon={Receipt}
+            title="No expenses yet"
+            description="Add your first expense to start tracking your spending."
+            action={{ label: "Add Expense", onClick: () => router.push("/expenses?add=true") }}
+          />
+        </div>
+      ) : expenses.length === 0 && search ? (
+        <div className="bg-card rounded-xl border border-border">
+          <EmptyState
+            icon={Search}
+            title="No matches"
+            description={`Nothing matches "${search}".`}
+          />
+        </div>
       ) : (
         <div className="space-y-2">
-          {data?.data.map((expense) => (
-            <Card key={expense.id} className="p-4">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                  style={{
-                    backgroundColor: expense.category?.color
-                      ? `${expense.category.color}20`
-                      : "hsl(var(--muted))",
-                  }}
-                >
-                  <span
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor:
-                        expense.category?.color ?? "hsl(var(--muted-foreground))",
-                    }}
-                  />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{expense.title}</p>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <span className="text-xs text-muted-foreground">
-                      {formatDate(expense.expense_date)}
-                    </span>
-                    {expense.category && (
-                      <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                        {expense.category.name}
-                      </Badge>
-                    )}
-                    <Badge variant="outline" className="text-xs px-1.5 py-0">
-                      {PAYMENT_METHOD_LABELS[expense.payment_method]}
-                    </Badge>
+          {expenses.map((e) => (
+            <div key={e.id} className="bg-card rounded-xl border border-border p-4 flex items-center justify-between hover:shadow-sm transition-shadow">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: e.category?.color ?? "#999" }} />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{e.title}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{e.category?.name ?? "Uncategorized"}</span>
+                    <span className="text-xs text-muted-foreground">{e.expense_date}</span>
                   </div>
-                </div>
-
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  <span className="text-sm font-bold text-foreground">
-                    {formatCurrency(expense.amount, expense.currency)}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => { setEditExpense(expense); setModalOpen(true) }}
-                    >
-                      <Pencil size={13} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 text-destructive hover:text-destructive"
-                      onClick={() => setDeleteId(expense.id)}
-                    >
-                      <Trash2 size={13} />
-                    </Button>
-                  </div>
+                  {e.note && <p className="text-xs text-muted-foreground mt-1 truncate">{e.note}</p>}
                 </div>
               </div>
-            </Card>
+              <div className="flex items-center gap-3 shrink-0 ml-4">
+                <span className="text-sm font-bold">{formatCurrency(e.amount, e.currency)}</span>
+                <button onClick={() => setEditingExpense(e)} className="p-1.5 rounded-md hover:bg-accent transition-colors" aria-label="Edit">
+                  <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+                <button onClick={() => handleDelete(e.id)} className="p-1.5 rounded-md hover:bg-destructive/10 transition-colors" aria-label="Delete">
+                  <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       )}
 
       {/* Pagination */}
-      {data && data.meta.totalPages > 1 && (
+      {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => p - 1)}
-            disabled={!data.meta.hasPreviousPage}
+          <button
+            disabled={page <= 1}
+            onClick={() => updateParams({ page: String(page - 1) })}
+            className="px-4 py-2 rounded-lg border border-border text-sm disabled:opacity-40"
           >
-            <ChevronLeft size={16} />
-            Prev
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            Page {data.meta.page} of {data.meta.totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => p + 1)}
-            disabled={!data.meta.hasNextPage}
+            Previous
+          </button>
+          <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+          <button
+            disabled={page >= totalPages}
+            onClick={() => updateParams({ page: String(page + 1) })}
+            className="px-4 py-2 rounded-lg border border-border text-sm disabled:opacity-40"
           >
             Next
-            <ChevronRight size={16} />
-          </Button>
+          </button>
         </div>
       )}
 
-      {/* Add/Edit Modal */}
-      <AddExpenseModal
-        open={modalOpen}
-        onClose={() => { setModalOpen(false); setEditExpense(null) }}
-        expense={editExpense}
-      />
-
-      {/* Delete Confirm */}
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete expense?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {showModal && (
+        <AddExpenseModal open={showModal} onClose={closeModal} expense={editingExpense} />
+      )}
     </div>
   )
 }
