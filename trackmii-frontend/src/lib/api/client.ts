@@ -1,10 +1,6 @@
-import { getToken, clearToken } from "@/lib/auth"
-import type { ApiResponse } from "@/lib/types"
+import { clearToken, getToken } from "@/lib/auth"
 
-//Central fetch wrapper. Automatically attaches JWT from localStorage to every request. On 401 (expired token), clears token and redirects to login. Normalizes all errors into a consistent ApiError class. All API modules use this instead of raw fetch.
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1"
-interface RequestOptions extends RequestInit {
+interface ApiClientOptions extends RequestInit {
   skipAuth?: boolean
 }
 
@@ -12,7 +8,7 @@ export class ApiError extends Error {
   constructor(
     public statusCode: number,
     message: string,
-    public error?: string
+    public data?: any
   ) {
     super(message)
     this.name = "ApiError"
@@ -20,41 +16,40 @@ export class ApiError extends Error {
 }
 
 export async function apiClient<T>(
-  path: string,
-  options: RequestOptions = {}
+  url: string,
+  options: ApiClientOptions = {}
 ): Promise<T> {
-  const { skipAuth = false, ...fetchOptions } = options
+  const { skipAuth, ...fetchOptions } = options
 
-  const headers = new Headers(fetchOptions.headers)
-  headers.set("Content-Type", "application/json")
+  const token = getToken()
+  const headers = new Headers(fetchOptions.headers ?? {})
 
-  if (!skipAuth) {
-    const token = getToken()
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`)
+  if (!skipAuth && token) {
+    headers.set("Authorization", `Bearer ${token}`)
+  }
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}${url}`,
+    {
+      ...fetchOptions,
+      headers,
     }
-  }
+  )
 
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...fetchOptions,
-    headers,
-  })
-
-  if (response.status === 401) {
-    clearToken()
-    window.location.href = "/login"
-    throw new ApiError(401, "Session expired. Please log in again.")
-  }
-
-  const json = await response.json()
+  const data = await response.json()
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearToken()
+      window.location.href = "/login"
+    }
+
     throw new ApiError(
-      json.statusCode ?? response.status,
-      json.message ?? "An error occurred",
-      json.error
+      response.status,
+      data.message || "Request failed",
+      data
     )
   }
 
-  return (json as ApiResponse<T>).data
+  return data.data ?? data
 }

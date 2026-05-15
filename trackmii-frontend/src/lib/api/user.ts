@@ -1,29 +1,28 @@
-//User profile and preferences API. Password update is separate from profile update per backend spec.
-
 import { apiClient } from "./client"
-import type { User, Currency } from "@/lib/types"
+import type { User } from "@/lib/types"
 
 export async function getProfile(): Promise<User> {
-  return apiClient<User>("/users/profile")
+  return apiClient("/users/profile")
 }
 
-export async function updateProfile(data: Partial<{
+export async function updateProfile(data: {
   name: string
   email: string
-}>): Promise<User> {
-  return apiClient<User>("/users/profile", {
+}): Promise<User> {
+  return apiClient("/users/profile", {
     method: "PUT",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   })
 }
 
-export async function updatePreferences(data: Partial<{
-  currency: Currency
-  timezone: string
-  dark_mode: boolean
-}>): Promise<User> {
-  return apiClient<User>("/users/preferences", {
+export async function updatePreferences(data: {
+  currency?: string
+  dark_mode?: boolean
+}): Promise<User> {
+  return apiClient("/users/preferences", {
     method: "PUT",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   })
 }
@@ -34,6 +33,7 @@ export async function updatePassword(data: {
 }): Promise<void> {
   return apiClient("/users/password", {
     method: "PUT",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   })
 }

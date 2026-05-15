@@ -2,29 +2,31 @@ import { apiClient } from "./client"
 import type { Category } from "@/lib/types"
 
 export async function getCategories(): Promise<Category[]> {
-  return apiClient<Category[]>("/categories")
+  return apiClient("/categories")
 }
 
 export async function getCategory(id: string): Promise<Category> {
-  return apiClient<Category>(`/categories/${id}`)
+  return apiClient(`/categories/${id}`)
 }
 
 export async function createCategory(data: {
   name: string
   color: string
 }): Promise<Category> {
-  return apiClient<Category>("/categories", {
+  return apiClient("/categories", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   })
 }
 
-export async function updateCategory(id: string, data: Partial<{
-  name: string
-  color: string
-}>): Promise<Category> {
-  return apiClient<Category>(`/categories/${id}`, {
+export async function updateCategory(
+  id: string,
+  data: { name: string; color: string }
+): Promise<Category> {
+  return apiClient(`/categories/${id}`, {
     method: "PUT",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   })
 }
@@ -32,5 +34,3 @@ export async function updateCategory(id: string, data: Partial<{
 export async function deleteCategory(id: string): Promise<void> {
   return apiClient(`/categories/${id}`, { method: "DELETE" })
 }
-
-//CRUD for categories. System defaults (is_default: true) are blocked from deletion by the backend — frontend just surfaces the error.

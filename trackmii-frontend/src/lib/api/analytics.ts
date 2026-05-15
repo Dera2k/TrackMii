@@ -1,11 +1,14 @@
 import { apiClient } from "./client"
+import type { Currency } from "@/lib/types"
 
 export interface DashboardStats {
   total_spent_all_time: number
   current_month_spent: number
-  current_month_budget: number | null
-  budget_usage_percentage: number | null
-  top_category: { name: string; color: string; amount: number } | null
+  transaction_count: number
+  top_category: {
+    name: string
+    color: string
+  } | null
 }
 
 export interface MonthlyTrend {
@@ -16,12 +19,11 @@ export interface MonthlyTrend {
 
 export interface WeeklyTrend {
   week: number
-  year: number
   total: number
 }
 
 export interface CategoryBreakdown {
-  category_id: string | null
+  category_id: string
   category_name: string
   color: string
   total: number
@@ -29,23 +31,23 @@ export interface CategoryBreakdown {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
-  return apiClient<DashboardStats>("/analytics/dashboard")
+  return apiClient("/analytics/dashboard")
 }
 
-export async function getMonthlyTrends(months = 6): Promise<MonthlyTrend[]> {
-  return apiClient<MonthlyTrend[]>(`/analytics/monthly?months=${months}`)
+export async function getMonthlyTrends(months: number = 6): Promise<MonthlyTrend[]> {
+  return apiClient(`/analytics/monthly?months=${months}`)
 }
 
-export async function getWeeklyTrends(weeks = 8): Promise<WeeklyTrend[]> {
-  return apiClient<WeeklyTrend[]>(`/analytics/weekly?weeks=${weeks}`)
+export async function getWeeklyTrends(weeks: number = 8): Promise<WeeklyTrend[]> {
+  return apiClient(`/analytics/weekly?weeks=${weeks}`)
 }
 
-export async function getCategoryBreakdown(params?: {
-  start_date?: string
-  end_date?: string
-}): Promise<CategoryBreakdown[]> {
-  const query = new URLSearchParams()
-  if (params?.start_date) query.set("start_date", params.start_date)
-  if (params?.end_date) query.set("end_date", params.end_date)
-  return apiClient<CategoryBreakdown[]>(`/analytics/category-breakdown?${query.toString()}`)
+export async function getCategoryBreakdown(
+  startDate?: string,
+  endDate?: string
+): Promise<CategoryBreakdown[]> {
+  const params = new URLSearchParams()
+  if (startDate) params.append("start_date", startDate)
+  if (endDate) params.append("end_date", endDate)
+  return apiClient(`/analytics/category-breakdown?${params.toString()}`)
 }

@@ -1,62 +1,51 @@
 "use client"
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getProfile, updateProfile, updatePreferences, updatePassword } from "@/lib/api/user"
-import { useAuth } from "@/lib/contexts/auth-context"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  updateProfile,
+  updatePreferences,
+  updatePassword,
+} from "@/lib/api/user"
 import { toast } from "sonner"
-
-export function useProfile() {
-  return useQuery({
-    queryKey: ["user", "profile"],
-    queryFn: getProfile,
-    staleTime: 5 * 60 * 1000,
-  })
-}
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient()
-  const { setUser } = useAuth()
-
   return useMutation({
-    mutationFn: updateProfile,
-    onSuccess: (updatedUser) => {
-      queryClient.setQueryData(["user", "profile"], updatedUser)
-      queryClient.setQueryData(["auth", "me"], updatedUser)
-      setUser(updatedUser)
+    mutationFn: (data: { name: string; email: string }) => updateProfile(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["auth"] })
       toast.success("Profile updated")
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update profile")
     },
   })
 }
 
 export function useUpdatePreferences() {
   const queryClient = useQueryClient()
-  const { setUser } = useAuth()
-
   return useMutation({
-    mutationFn: updatePreferences,
-    onSuccess: (updatedUser) => {
-      queryClient.setQueryData(["user", "profile"], updatedUser)
-      queryClient.setQueryData(["auth", "me"], updatedUser)
-      setUser(updatedUser)
-      toast.success("Preferences saved")
+    mutationFn: (data: { currency?: string; dark_mode?: boolean }) =>
+      updatePreferences(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["auth"] })
+      toast.success("Preferences updated")
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update preferences")
     },
   })
 }
 
 export function useUpdatePassword() {
   return useMutation({
-    mutationFn: updatePassword,
+    mutationFn: (data: { current_password: string; new_password: string }) =>
+      updatePassword(data),
     onSuccess: () => {
-      toast.success("Password updated successfully")
+      toast.success("Password changed")
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to change password")
     },
   })
 }

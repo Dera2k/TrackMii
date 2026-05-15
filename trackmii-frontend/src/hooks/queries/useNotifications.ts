@@ -6,13 +6,12 @@ import {
   getUnreadCount,
   markNotificationsRead,
 } from "@/lib/api/notifications"
-import { NOTIFICATION_POLL_INTERVAL } from "@/lib/constants"
 
-export function useNotifications(is_read?: boolean) {
+export function useNotifications() {
   return useQuery({
     queryKey: ["notifications"],
-    queryFn: () => getNotifications(is_read),
-    refetchInterval: NOTIFICATION_POLL_INTERVAL,
+    queryFn: getNotifications,
+    refetchInterval: 1000 * 30,
     refetchIntervalInBackground: false,
     staleTime: 0,
   })
@@ -22,7 +21,7 @@ export function useUnreadCount() {
   return useQuery({
     queryKey: ["notifications", "unread-count"],
     queryFn: getUnreadCount,
-    refetchInterval: NOTIFICATION_POLL_INTERVAL,
+    refetchInterval: 1000 * 30,
     refetchIntervalInBackground: false,
     staleTime: 0,
   })
@@ -30,11 +29,11 @@ export function useUnreadCount() {
 
 export function useMarkNotificationsRead() {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: markNotificationsRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] })
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] })
     },
   })
 }

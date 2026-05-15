@@ -4,18 +4,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getBudgets,
   getCurrentMonthBudgets,
-  getBudget,
   createBudget,
   updateBudget,
   deleteBudget,
+  type BudgetData,
 } from "@/lib/api/budgets"
 import { toast } from "sonner"
+import type { Budget } from "@/lib/types"
 
 export function useBudgets() {
   return useQuery({
     queryKey: ["budgets"],
     queryFn: getBudgets,
-    staleTime: 60 * 1000,
+    staleTime: 1000 * 60 * 5,
   })
 }
 
@@ -23,61 +24,51 @@ export function useCurrentMonthBudgets() {
   return useQuery({
     queryKey: ["budgets", "current-month"],
     queryFn: getCurrentMonthBudgets,
-    staleTime: 30 * 1000,
-  })
-}
-
-export function useBudget(id: string) {
-  return useQuery({
-    queryKey: ["budgets", id],
-    queryFn: () => getBudget(id),
-    enabled: !!id,
+    staleTime: 1000 * 60 * 5,
   })
 }
 
 export function useCreateBudget() {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: createBudget,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["budgets"] })
-      queryClient.invalidateQueries({ queryKey: ["analytics", "dashboard"] })
+      queryClient.invalidateQueries({ queryKey: ["analytics"] })
       toast.success("Budget created")
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to create budget")
     },
   })
 }
 
 export function useUpdateBudget() {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateBudget>[1] }) =>
+    mutationFn: ({ id, data }: { id: string; data: { amount: number; currency: string } }) =>
       updateBudget(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["budgets"] })
+      queryClient.invalidateQueries({ queryKey: ["analytics"] })
       toast.success("Budget updated")
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to update budget")
     },
   })
 }
 
 export function useDeleteBudget() {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: deleteBudget,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["budgets"] })
       toast.success("Budget deleted")
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete budget")
     },
   })
 }

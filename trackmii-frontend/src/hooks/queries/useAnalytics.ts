@@ -12,30 +12,30 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ["analytics", "dashboard"],
     queryFn: getDashboardStats,
-    staleTime: 30 * 1000,
+    staleTime: 1000 * 60 * 5,
   })
 }
 
-export function useMonthlyTrends(months = 6) {
+export function useMonthlyTrends(months: number = 6) {
   return useQuery({
     queryKey: ["analytics", "monthly", months],
     queryFn: () => getMonthlyTrends(months),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 1000 * 60 * 5,
   })
 }
 
-export function useWeeklyTrends(weeks = 8) {
+export function useWeeklyTrends(weeks: number = 8) {
   return useQuery({
     queryKey: ["analytics", "weekly", weeks],
     queryFn: () => getWeeklyTrends(weeks),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 1000 * 60 * 5,
   })
 }
 
-export function useCategoryBreakdown(params?: { start_date?: string; end_date?: string }) {
+export function useCategoryBreakdown() {
   return useQuery({
-    queryKey: ["analytics", "category-breakdown", params ?? {}],
-    queryFn: () => getCategoryBreakdown(params),
-    staleTime: 60 * 1000,
+    queryKey: ["analytics", "category-breakdown"],
+    queryFn: () => getCategoryBreakdown(),
+    staleTime: 1000 * 60 * 5,
   })
 }

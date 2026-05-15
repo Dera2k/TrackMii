@@ -1,20 +1,19 @@
 import { apiClient } from "./client"
 import type { Notification } from "@/lib/types"
 
-export async function getNotifications(is_read?: boolean): Promise<Notification[]> {
-  const query = is_read !== undefined ? `?is_read=${is_read}` : ""
-  return apiClient<Notification[]>(`/notifications${query}`)
+export async function getNotifications(): Promise<Notification[]> {
+  return apiClient("/notifications")
 }
 
 export async function getUnreadCount(): Promise<number> {
-  return apiClient<number>("/notifications/unread-count")
+  const res = await apiClient<{ unread_count: number }>("/notifications/unread-count")
+  return res.unread_count
 }
 
 export async function markNotificationsRead(ids: string[]): Promise<void> {
   return apiClient("/notifications/mark-read", {
     method: "PUT",
-    body: JSON.stringify({ ids }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ notification_ids: ids }),
   })
 }
-
-//nnotification calls. Pass an empty array [] to mark all as read per backend spec.

@@ -1,100 +1,82 @@
 "use client"
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getExpenses, getExpense, createExpense, updateExpense, deleteExpense, bulkDeleteExpenses } from "@/lib/api/expenses"
-import type { ExpenseFilters } from "@/lib/api/expenses"
-import type { Expense } from "@/lib/types"
+import { getExpenses, createExpense, updateExpense, deleteExpense, type ExpenseFilters } from "@/lib/api/expenses"
 import { toast } from "sonner"
+import type { Expense } from "@/lib/types"
 
-export function useExpenses(filters: ExpenseFilters = {}) {
+export function useExpenses(filters?: ExpenseFilters) {
   return useQuery({
-    queryKey: ["expenses", "list", filters],
+    queryKey: ["expenses", filters],
     queryFn: () => getExpenses(filters),
-    staleTime: 30 * 1000,
+    staleTime: 1000 * 60 * 5,
   })
 }
 
 export function useExpense(id: string) {
   return useQuery({
-    queryKey: ["expenses", id],
-    queryFn: () => getExpense(id),
-    enabled: !!id,
+    queryKey: ["expense", id],
+    queryFn: async () => {
+      const { data } = await getExpenses()
+      return data.find((e: Expense) => e.id === id)
+    },
   })
 }
 
 export function useCreateExpense() {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: createExpense,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] })
-      queryClient.invalidateQueries({ queryKey: ["analytics", "dashboard"] })
-      queryClient.invalidateQueries({ queryKey: ["budgets", "current-month"] })
+      queryClient.invalidateQueries({ queryKey: ["budgets"] })
+      queryClient.invalidateQueries({ queryKey: ["analytics"] })
       toast.success("Expense added")
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to add expense")
     },
   })
 }
 
 export function useUpdateExpense() {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof updateExpense>[1] }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<Expense> }) =>
       updateExpense(id, data),
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey: ["expenses", id] })
-      const previous = queryClient.getQueryData<Expense>(["expenses", id])
-      queryClient.setQueryData(["expenses", id], (old: Expense) => ({ ...old, ...data }))
+      await queryClient.cancelQueries({ queryKey: ["expenses"] })
+      const previous = queryClient.getQueryData(["expenses"])
+      queryClient.setQueryData(["expenses"], (old: any) => ({
+        ...old,
+        data: old.data.map((e: Expense) => (e.id === id ? { ...e, ...data } : e)),
+      }))
       return { previous }
     },
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["expenses"] })
-      queryClient.invalidateQueries({ queryKey: ["expenses", id] })
-      queryClient.invalidateQueries({ queryKey: ["analytics", "dashboard"] })
-      toast.success("Expense updated")
+    onError: (error: any, variables, context: any) => {
+      queryClient.setQueryData(["expenses"], context.previous)
+      toast.error(error.message || "Failed to update expense")
     },
-    onError: (error: Error, { id }, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(["expenses", id], context.previous)
-      }
-      toast.error(error.message)
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] })
+      queryClient.invalidateQueries({ queryKey: ["analytics"] })
+      toast.success("Expense updated")
     },
   })
 }
 
 export function useDeleteExpense() {
   const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: deleteExpense,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] })
-      queryClient.invalidateQueries({ queryKey: ["analytics", "dashboard"] })
-      queryClient.invalidateQueries({ queryKey: ["budgets", "current-month"] })
+      queryClient.invalidateQueries({ queryKey: ["budgets"] })
+      queryClient.invalidateQueries({ queryKey: ["analytics"] })
       toast.success("Expense deleted")
     },
-    onError: (error: Error) => {
-      toast.error(error.message)
-    },
-  })
-}
-
-export function useBulkDeleteExpenses() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: bulkDeleteExpenses,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["expenses"] })
-      queryClient.invalidateQueries({ queryKey: ["analytics", "dashboard"] })
-      toast.success("Expenses deleted")
-    },
-    onError: (error: Error) => {
-      toast.error(error.message)
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete expense")
     },
   })
 }
