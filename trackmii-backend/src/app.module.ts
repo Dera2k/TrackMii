@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { CategoriesModule } from './modules/categories/categories.module';
@@ -53,4 +53,10 @@ import { BudgetsService } from './modules/budgets/budgets.service';
   ],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private categoriesService: CategoriesService) {}
+
+  async onModuleInit() {
+    await this.categoriesService.seedDefaults();
+  }
+}
