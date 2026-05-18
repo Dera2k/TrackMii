@@ -6,14 +6,13 @@ export async function getNotifications(): Promise<Notification[]> {
 }
 
 export async function getUnreadCount(): Promise<number> {
-  const res = await apiClient<{ unread_count: number }>("/notifications/unread-count")
-  return res.unread_count
+  const res = await apiClient<{ count: number }>("/notifications/unread-count")
+  return res.count
 }
 
 export async function markNotificationsRead(ids: string[]): Promise<void> {
-  return apiClient("/notifications/mark-read", {
+  await apiClient("/notifications/mark-read", {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ notification_ids: ids }),
   })
 }
