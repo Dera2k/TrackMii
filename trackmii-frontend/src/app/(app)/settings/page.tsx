@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { useUpdateProfile, useUpdatePreferences, useUpdatePassword } from "@/hooks/queries/useUser"
 import { useLogout } from "@/hooks/queries/useAuth"
+import { useExportCsv } from "@/hooks/queries/useExports"
 import { useTheme } from "next-themes"
 import { Moon, Sun, Download, LogOut } from "lucide-react"
 import { CURRENCY_SYMBOLS } from "@/lib/constants"
@@ -13,6 +14,7 @@ export default function SettingsPage() {
   const { user } = useAuth()
   const { theme, setTheme } = useTheme()
   const logout = useLogout()
+  const exportCsv = useExportCsv()
 
   const updateProfile = useUpdateProfile()
   const updatePreferences = useUpdatePreferences()
@@ -137,11 +139,16 @@ export default function SettingsPage() {
         <h2 className="text-sm font-semibold mb-2">Data Export</h2>
         <p className="text-sm text-muted-foreground mb-4">Download all your expense data as CSV</p>
         <button
-          onClick={() => window.open(`${process.env.NEXT_PUBLIC_API_URL}/export/csv`, "_blank")}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors"
+          onClick={() => exportCsv.mutate({})}
+          disabled={exportCsv.isPending}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50"
         >
-          <Download className="w-4 h-4" /> Export to CSV
+          <Download className="w-4 h-4" />
+          {exportCsv.isPending ? "Exporting..." : "Export to CSV"}
         </button>
+        {exportCsv.isError && (
+          <p className="text-xs text-destructive mt-2">Export failed. Please try again.</p>
+        )}
       </div>
 
       {/* Logout */}
