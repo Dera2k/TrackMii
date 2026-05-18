@@ -67,6 +67,7 @@ function SheetContent({
         )}
         {...props}
       >
+        <SheetTitle className="sr-only">Sheet</SheetTitle>
         {children}
         {showCloseButton && (
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
@@ -75,8 +76,7 @@ function SheetContent({
               className="absolute top-4 right-4"
               size="icon-sm"
             >
-              <XIcon
-              />
+              <XIcon />
               <span className="sr-only">Close</span>
             </Button>
           </SheetPrimitive.Close>
