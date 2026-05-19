@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {LayoutDashboard, Receipt, Tag, PiggyBank, BarChart2, Settings, ChevronLeft, ChevronRight,} from "lucide-react"
+import {LayoutDashboard, Receipt, Tag, PiggyBank, BarChart2, ChevronLeft, ChevronRight,} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -11,7 +11,6 @@ const navItems = [
   { href: "/categories", label: "Categories", icon: Tag },
   { href: "/budgets",    label: "Budgets",    icon: PiggyBank },
   { href: "/analytics",  label: "Analytics",  icon: BarChart2 },
-  { href: "/settings",   label: "Settings",   icon: Settings },
 ]
 
 interface AppSidebarProps {
@@ -72,4 +71,4 @@ export function AppSidebar({ collapsed, onToggleCollapse }: AppSidebarProps) {
   )
 }
 
-//desktop sidebar. Uses usePathname() to detect active route and apply active styles. Collapses to icon-only mode (w-16) when toggled. Sticky so it stays in view while page content scrolls.
+//desktop sidebar. Settings removed — accessed via profile menu in TopBar.

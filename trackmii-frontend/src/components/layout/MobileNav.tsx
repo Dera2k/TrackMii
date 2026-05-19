@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {  LayoutDashboard, Receipt, PiggyBank, BarChart2, Settings,} from "lucide-react"
+import {  LayoutDashboard, Receipt, PiggyBank, BarChart2,} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -10,7 +10,6 @@ const navItems = [
   { href: "/expenses",  label: "Expenses", icon: Receipt },
   { href: "/budgets",   label: "Budgets",  icon: PiggyBank },
   { href: "/analytics", label: "Charts",   icon: BarChart2 },
-  { href: "/settings",  label: "Settings", icon: Settings },
 ]
 
 export function MobileNav() {
@@ -38,4 +37,4 @@ export function MobileNav() {
   )
 }
 
-//Fixed bottom navigation for mobile. 5 items — Categories is excluded since it's accessible from the sidebar on desktop and less frequently visited on mobile. Active item gets primary color.
+//Fixed bottom navigation for mobile. Settings removed — accessed via profile menu in TopBar.

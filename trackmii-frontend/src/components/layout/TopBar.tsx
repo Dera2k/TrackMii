@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Menu, Sun, Moon } from "lucide-react"
+import { Bell, Sun, Moon, Menu, LogOut, Settings } from "lucide-react"
 import { useTheme } from "next-themes"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useNotifications, useUnreadCount, useMarkNotificationsRead } from "@/hooks/queries/useNotifications"
+import { useAuth } from "@/lib/contexts/auth-context"
+import { useLogout } from "@/hooks/queries/useAuth"
+import Link from "next/link"
 
 const pageTitles: Record<string, string> = {
   "/":           "Dashboard",
@@ -27,13 +30,17 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   const pathname = usePathname()
   const isMobile = useIsMobile()
   const title = pageTitles[pathname] ?? "Trackmii"
+  const { user } = useAuth()
+  const logout = useLogout()
   const { data: unreadCount = 0 } = useUnreadCount()
   const { data: notifications = [] } = useNotifications()
   const markRead = useMarkNotificationsRead()
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
 
   const handleMarkAllRead = () => {
     markRead.mutate([])
+    setShowNotifications(false)
   }
 
   return (
@@ -66,6 +73,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           <Moon size={18} className="hidden dark:block" />
         </Button>
 
+        {/* Notifications */}
         <div className="relative">
           <Button 
             variant="ghost" 
@@ -81,24 +89,18 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           </Button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-12 w-96 bg-popover border border-border rounded-xl shadow-xl p-0 z-50">
+            <div className="absolute right-0 top-12 w-96 bg-popover border border-border rounded-xl shadow-xl z-50">
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h3 className="font-semibold text-sm">Notifications</h3>
-                {unreadCount > 0 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleMarkAllRead}
-                    className="text-xs h-7"
-                  >
-                    Mark all read
-                  </Button>
-                )}
               </div>
 
               {notifications.length === 0 ? (
                 <div className="p-8 text-center">
+                  <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+                    <Bell size={20} className="text-muted-foreground" />
+                  </div>
                   <p className="text-sm text-muted-foreground">All caught up!</p>
+                  <p className="text-xs text-muted-foreground mt-1">No new notifications</p>
                 </div>
               ) : (
                 <div className="max-h-96 overflow-y-auto divide-y divide-border">
@@ -119,21 +121,73 @@ export function TopBar({ onMenuClick }: TopBarProps) {
                       </div>
                     </div>
                   ))}
+                  {unreadCount > 0 && (
+                    <div className="p-3 border-t border-border">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleMarkAllRead}
+                        className="w-full text-xs"
+                      >
+                        Mark all as read
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <Avatar className="w-8 h-8 cursor-pointer ml-1">
-          <AvatarFallback className="text-xs bg-primary text-primary-foreground">
-            TM
-          </AvatarFallback>
-        </Avatar>
+        {/* Profile dropdown */}
+        <div className="relative ml-2">
+          <button
+            onClick={() => setShowProfile(!showProfile)}
+            className="w-8 h-8"
+            aria-label="Profile menu"
+          >
+            <Avatar className="w-8 h-8">
+              <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xs">
+              {user?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase() ?? 'U'}
+              </AvatarFallback>
+            </Avatar>
+          </button>
+
+          {showProfile && (
+            <div className="absolute right-0 top-12 w-48 bg-popover border border-border rounded-xl shadow-xl z-50">
+              <div className="p-4 border-b border-border">
+                <p className="text-sm font-medium text-foreground">{user?.name}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
+              </div>
+
+              <div className="p-2 space-y-1">
+                <Link
+                  href="/settings"
+                  onClick={() => setShowProfile(false)}
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-foreground hover:bg-accent rounded-lg transition-colors"
+                >
+                  <Settings size={16} />
+                  Settings
+                </Link>
+
+                <button
+                  onClick={() => {
+                    logout()
+                    setShowProfile(false)
+                  }}
+                  className="flex items-center gap-3 px-3 py-2 w-full text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                >
+                  <LogOut size={16} />
+                  Log out
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   )
 }
 
-//Sticky header. Shows hamburger on mobile to open the sidebar drawer. Reads current route to display page title.
-//Notifications bell shows unread count as a red dot and opens themed dropdown on click.
+//Sticky header with dark mode toggle, notifications bell with dropdown, and profile menu.
+//Profile menu shows user info, Settings link, and Log out button.
