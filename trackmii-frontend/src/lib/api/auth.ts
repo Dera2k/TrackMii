@@ -49,7 +49,7 @@ export async function resetPassword(data: {
 }
 
 export async function getMe(): Promise<User> {
-  return apiClient<User>("/auth/me")
+  return apiClient<User>("/users/profile")
 }
 
 //auth API functions. register and login automatically store the returned JWT via setToken. skipAuth: true means these requests don't attach a token since the user isn't authenticated yet.
