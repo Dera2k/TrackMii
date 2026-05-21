@@ -1,14 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import { useBudgets, useDeleteBudget } from "@/hooks/queries/useBudgets"
+import { useBudgets, useDeleteBudget, useCreateBudget, useUpdateBudget } from "@/hooks/queries/useBudgets"
 import { useCategories } from "@/hooks/queries/useCategories"
 import { useAuth } from "@/lib/contexts/auth-context"
-import { useCreateBudget, useUpdateBudget } from "@/hooks/queries/useBudgets"
 import { formatCurrency } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/common/EmptyState"
-import { Target } from "lucide-react"
+import { Target, Trash2 } from "lucide-react"
 import type { Budget } from "@/lib/types"
 
 export default function BudgetsPage() {
@@ -18,6 +17,7 @@ export default function BudgetsPage() {
   const { data: categories } = useCategories()
   const createMutation = useCreateBudget()
   const updateMutation = useUpdateBudget()
+  const deleteMutation = useDeleteBudget()
 
   const [showModal, setShowModal] = useState(false)
   const [editBudget, setEditBudget] = useState<Budget | null>(null)
@@ -29,7 +29,25 @@ export default function BudgetsPage() {
   const overall = budgets?.find((b) => !b.category_id)
   const categoryBudgets = budgets?.filter((b) => b.category_id) ?? []
 
-  const openSet = (b?: Budget) => {
+  const handleCategoryChange = (id: string) => {
+    setCategoryId(id)
+    
+    const existing = budgets?.find(
+      b => b.category_id === (id || null) &&
+           b.month === now.getMonth() + 1 &&
+           b.year === now.getFullYear()
+    )
+    
+    if (existing) {
+      setEditBudget(existing)
+      setAmount(existing.amount.toString())
+    } else {
+      setEditBudget(null)
+      setAmount("")
+    }
+  }
+
+  const openModal = (b?: Budget) => {
     if (b) {
       setEditBudget(b)
       setCategoryId(b.category_id ?? "")
@@ -45,21 +63,46 @@ export default function BudgetsPage() {
   const handleSave = async () => {
     if (!amount) return
     const amt = parseFloat(amount)
+    
     if (editBudget) {
       await updateMutation.mutateAsync({
         id: editBudget.id,
         data: { amount: amt, currency: editBudget.currency },
       })
+      setShowModal(false)
     } else {
-      await createMutation.mutateAsync({
-        category_id: categoryId || undefined,
-        amount: amt,
-        currency: user?.currency ?? "NGN",
-        month: now.getMonth() + 1,
-        year: now.getFullYear(),
-      })
+      try {
+        await createMutation.mutateAsync({
+          category_id: categoryId || undefined,
+          amount: amt,
+          currency: user?.currency ?? "NGN",
+          month: now.getMonth() + 1,
+          year: now.getFullYear(),
+        })
+        setShowModal(false)
+      } catch (error: any) {
+        if (error?.status === 409) {
+          const existing = budgets?.find(
+            b => b.category_id === (categoryId || null) &&
+                 b.month === now.getMonth() + 1 &&
+                 b.year === now.getFullYear()
+          )
+          if (existing) {
+            await updateMutation.mutateAsync({
+              id: existing.id,
+              data: { amount: amt, currency: existing.currency }
+            })
+            setShowModal(false)
+          }
+        }
+      }
     }
-    setShowModal(false)
+  }
+
+  const handleDelete = async (budget: Budget) => {
+    if (confirm("Delete this budget?")) {
+      await deleteMutation.mutateAsync(budget.id)
+    }
   }
 
   const getColor = (pct: number) =>
@@ -73,7 +116,7 @@ export default function BudgetsPage() {
           <p className="text-muted-foreground text-sm mt-1">{monthLabel}</p>
         </div>
         <button
-          onClick={() => openSet()}
+          onClick={() => openModal()}
           className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
         >
           Set Budget
@@ -90,7 +133,7 @@ export default function BudgetsPage() {
             icon={Target}
             title="No budgets set"
             description="Set a monthly budget to track your spending against your goals."
-            action={{ label: "Set Budget", onClick: () => openSet() }}
+            action={{ label: "Set Budget", onClick: () => openModal() }}
           />
         </div>
       ) : (
@@ -98,7 +141,7 @@ export default function BudgetsPage() {
           {overall && (
             <div
               className="bg-card rounded-xl border border-border p-6 cursor-pointer hover:shadow-sm transition-shadow"
-              onClick={() => openSet(overall)}
+              onClick={() => openModal(overall)}
             >
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold">Overall Monthly Budget</h2>
@@ -125,15 +168,23 @@ export default function BudgetsPage() {
             <div className="space-y-3">
               {categoryBudgets.map((b) => (
                 <div key={b.id}
-                  className="bg-card rounded-xl border border-border p-4 cursor-pointer hover:shadow-sm transition-shadow"
-                  onClick={() => openSet(b)}
+                  className="bg-card rounded-xl border border-border p-4 group hover:shadow-sm transition-shadow"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1 cursor-pointer" onClick={() => openModal(b)}>
                       <span className="w-3 h-3 rounded-full" style={{ backgroundColor: b.category?.color ?? "#999" }} />
                       <span className="text-sm font-medium">{b.category?.name ?? "Category"}</span>
                     </div>
-                    <span className="text-sm font-bold">{Math.round(b.usage_percentage)}%</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold">{Math.round(b.usage_percentage)}%</span>
+                      <button
+                        onClick={() => handleDelete(b)}
+                        disabled={deleteMutation.isPending}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-destructive/10 text-destructive transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-500"
@@ -160,12 +211,12 @@ export default function BudgetsPage() {
                 <label className="text-sm font-medium mb-1 block">Category</label>
                 <select
                   value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
                   disabled={!!editBudget}
                   className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
                 >
                   <option value="">Overall Budget</option>
-                  {categories?.filter((c) => !c.is_default).map((c) => (
+                  {categories?.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
