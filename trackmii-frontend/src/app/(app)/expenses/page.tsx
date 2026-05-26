@@ -61,6 +61,40 @@ export default function ExpensesPage() {
   const total = data?.meta?.total ?? 0
   const totalPages = data?.meta?.totalPages ?? 1
 
+  // Generate page numbers with ellipsis
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const maxVisible = 5
+    const halfVisible = Math.floor(maxVisible / 2)
+
+    let startPage = Math.max(1, page - halfVisible)
+    let endPage = Math.min(totalPages, page + halfVisible)
+
+    if (endPage - startPage < maxVisible - 1) {
+      if (startPage === 1) {
+        endPage = Math.min(totalPages, startPage + maxVisible - 1)
+      } else {
+        startPage = Math.max(1, endPage - maxVisible + 1)
+      }
+    }
+
+    if (startPage > 1) {
+      pages.push(1)
+      if (startPage > 2) pages.push("...")
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i)
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) pages.push("...")
+      pages.push(totalPages)
+    }
+
+    return pages
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -78,7 +112,7 @@ export default function ExpensesPage() {
         </button>
       </div>
 
-      {/* Search & filters — only show if there are expenses */}
+      {/* Search & filters */}
       {(expenses.length > 0 || search || categoryId || paymentMethod) && (
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1 relative">
@@ -176,19 +210,37 @@ export default function ExpensesPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center justify-center gap-1 pt-4">
           <button
             disabled={page <= 1}
             onClick={() => updateParams({ page: String(page - 1) })}
-            className="px-4 py-2 rounded-lg border border-border text-sm disabled:opacity-40"
+            className="px-3 py-2 rounded-lg border border-border text-sm disabled:opacity-40 hover:bg-accent transition-colors"
           >
             Previous
           </button>
-          <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+
+          {getPageNumbers().map((p, i) => (
+            p === "..." ? (
+              <span key={`ellipsis-${i}`} className="px-2 text-muted-foreground">...</span>
+            ) : (
+              <button
+                key={p}
+                onClick={() => updateParams({ page: String(p) })}
+                className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                  p === page
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border border-border hover:bg-accent'
+                }`}
+              >
+                {p}
+              </button>
+            )
+          ))}
+
           <button
             disabled={page >= totalPages}
             onClick={() => updateParams({ page: String(page + 1) })}
-            className="px-4 py-2 rounded-lg border border-border text-sm disabled:opacity-40"
+            className="px-3 py-2 rounded-lg border border-border text-sm disabled:opacity-40 hover:bg-accent transition-colors"
           >
             Next
           </button>

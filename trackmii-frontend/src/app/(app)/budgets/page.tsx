@@ -105,8 +105,17 @@ export default function BudgetsPage() {
     }
   }
 
-  const getColor = (pct: number) =>
-    pct >= 100 ? "hsl(var(--destructive))" : pct >= 80 ? "#eab308" : "hsl(var(--primary))"
+  const getColor = (pct: number) => {
+  const isDark = document.documentElement.classList.contains('dark')
+  
+  if (pct >= 100) {
+    return isDark ? '#ff4444' : '#dc2626'
+  } else if (pct >= 80) {
+    return '#eab308'
+  } else {
+    return isDark ? '#5a9d1f' : '#2d5a0c'
+  }
+}
 
   return (
     <div className="space-y-6">
