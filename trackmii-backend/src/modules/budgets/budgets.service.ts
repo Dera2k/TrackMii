@@ -157,7 +157,8 @@ export class BudgetsService {
     year: number,
   ): Promise<number> {
     const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0);
+    const lastDay = new Date(year, month, 1);
+    lastDay.setDate(lastDay.getDate() - 1);
 
     const queryBuilder = this.expenseRepo
       .createQueryBuilder('expense')
@@ -216,7 +217,6 @@ export class BudgetsService {
 
     const categoryName = budget.category?.name || 'overall budget';
 
-    // 80% warning
     if (usagePercentage >= 80 && usagePercentage < 100) {
       const isDuplicate = await this.notificationsService.checkDuplicate(
         userId,
@@ -236,7 +236,6 @@ export class BudgetsService {
       }
     }
 
-    // 100% exceeded
     if (usagePercentage >= 100) {
       const isDuplicate = await this.notificationsService.checkDuplicate(
         userId,
@@ -271,41 +270,41 @@ export class BudgetsService {
   }
 
   private async toResponseDto(
-  userId: string,
-  budget: Budget,
-): Promise<BudgetResponseDto> {
-  const categoryId = budget.category_id ?? null;
+    userId: string,
+    budget: Budget,
+  ): Promise<BudgetResponseDto> {
+    const categoryId = budget.category_id ?? null;
 
-  const spentAmount = await this.calculateSpentAmount(
-    userId,
-    categoryId,
-    budget.month,
-    budget.year,
-  );
+    const spentAmount = await this.calculateSpentAmount(
+      userId,
+      categoryId,
+      budget.month,
+      budget.year,
+    );
 
-  const usagePercentage = await this.calculateUsagePercentage(
-    spentAmount,
-    parseFloat(budget.amount.toString()),
-  );
+    const usagePercentage = await this.calculateUsagePercentage(
+      spentAmount,
+      parseFloat(budget.amount.toString()),
+    );
 
-  return {
-    id: budget.id,
-    amount: parseFloat(budget.amount.toString()),
-    currency: budget.currency,
-    month: budget.month,
-    year: budget.year,
-    spent_amount: spentAmount,
-    usage_percentage: parseFloat(usagePercentage.toFixed(2)),
-    category_id: categoryId,
-    category: budget.category
-      ? {
-          id: budget.category.id,
-          name: budget.category.name,
-          color: budget.category.color,
-        }
-      : null,
-    created_at: budget.created_at,
-    updated_at: budget.updated_at,
-  };
-}
+    return {
+      id: budget.id,
+      amount: parseFloat(budget.amount.toString()),
+      currency: budget.currency,
+      month: budget.month,
+      year: budget.year,
+      spent_amount: spentAmount,
+      usage_percentage: parseFloat(usagePercentage.toFixed(2)),
+      category_id: categoryId,
+      category: budget.category
+        ? {
+            id: budget.category.id,
+            name: budget.category.name,
+            color: budget.category.color,
+          }
+        : null,
+      created_at: budget.created_at,
+      updated_at: budget.updated_at,
+    };
+  }
 }

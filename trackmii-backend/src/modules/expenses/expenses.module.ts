@@ -6,15 +6,20 @@ import { ExpensesController } from './expenses.controller';
 import { ExpensesService } from './expenses.service';
 import { BudgetsModule } from '../budgets/budgets.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { CategoriesModule } from '../categories/categories.module';
+import { UsersModule } from '../users/users.module';
+import { ExpenseSeeder } from '../../database/seeders/expense.seeder'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Expense, User]),
     BudgetsModule,
     NotificationsModule,
+    CategoriesModule,
+    UsersModule,
   ],
   controllers: [ExpensesController],
-  providers: [ExpensesService],
-  exports: [TypeOrmModule, ExpensesService],
+  providers: [ExpensesService, ExpenseSeeder],
+  exports: [TypeOrmModule, ExpensesService, ExpenseSeeder],
 })
 export class ExpensesModule {}
