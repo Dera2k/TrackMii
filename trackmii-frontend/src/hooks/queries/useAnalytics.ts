@@ -32,10 +32,10 @@ export function useWeeklyTrends(weeks: number = 8) {
   })
 }
 
-export function useCategoryBreakdown() {
+export function useCategoryBreakdown(params?: { start_date?: string; end_date?: string }) {
   return useQuery({
-    queryKey: ["analytics", "category-breakdown"],
-    queryFn: () => getCategoryBreakdown(),
+    queryKey: ["analytics", "category-breakdown", params?.start_date, params?.end_date],
+    queryFn: () => getCategoryBreakdown(params?.start_date, params?.end_date),
     staleTime: 1000 * 60 * 5,
   })
 }

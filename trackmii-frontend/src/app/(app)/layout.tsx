@@ -1,11 +1,15 @@
 import { AppLayout } from "@/components/layout/AppLayout"
+import { MonthlyBudgetPrompt } from "@/components/budget/MonthlyBudgetPrompt"
 
 export default function AppGroupLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return <AppLayout>{children}</AppLayout>
+  return (
+    <AppLayout>
+      <MonthlyBudgetPrompt />
+      {children}
+    </AppLayout>
+  )
 }
-
-//Wraps all authenticated pages with the full app shell. Every page inside (app)/ gets the sidebar, topbar, bottom nav, and FAB automatically.

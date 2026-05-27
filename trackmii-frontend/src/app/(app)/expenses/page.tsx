@@ -40,7 +40,11 @@ export default function ExpensesPage() {
   const updateParams = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString())
     Object.entries(updates).forEach(([k, v]) => v ? params.set(k, v) : params.delete(k))
-    params.set("page", "1")
+
+    //reset to page 1 if not update page directly
+    if (!updates.page) {
+      params.set("page", "1")
+    }
     router.push(`/expenses?${params.toString()}`)
   }
 
