@@ -1,26 +1,10 @@
-// src/modules/export/export.controller.ts
-
-import {
-  Controller,
-  Get,
-  Query,
-  UseGuards,
-  Res,
-  StreamableFile,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { Controller, Get, Query,UseGuards, Res, StreamableFile } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { ExportsService } from './exports.service';
 import { ExportQueryDto } from './dtos/export-query.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../../common//decorators/current-user.decorator';
-
-
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('Export')
 @ApiBearerAuth()
@@ -29,24 +13,24 @@ import { CurrentUser } from '../../common//decorators/current-user.decorator';
 export class ExportController {
   constructor(private readonly exportService: ExportsService) {}
 
-  @Get('csv')
-  @ApiOperation({ summary: 'Export expenses to CSV' })
+  @Get('xlsx')
+  @ApiOperation({ summary: 'Export expenses to XLSX' })
   @ApiResponse({
     status: 200,
-    description: 'CSV file generated',
+    description: 'XLSX file generated',
   })
-  async exportToCsv(
+  async exportToXlsx(
     @CurrentUser() user: any,
     @Query() query: ExportQueryDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const csvBuffer = await this.exportService.exportToCsv(user.id, query);
+    const xlsxBuffer = await this.exportService.exportToXlsx(user.id, query);
 
     res.set({
-      'Content-Type': 'text/csv',
-      'Content-Disposition': `attachment; filename="expenses-${Date.now()}.csv"`,
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="expenses-${Date.now()}.xlsx"`,
     });
 
-    return new StreamableFile(csvBuffer);
+    return new StreamableFile(xlsxBuffer);
   }
 }
