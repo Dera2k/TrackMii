@@ -33,7 +33,7 @@ interface ExportModalProps {
   onClose: () => void
 }
 
-export function ExportModal({ open, onClose }: ExportModalProps) {
+function ExportModal({ open, onClose }: ExportModalProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const exportXlsx = useExportXlsx()
@@ -42,7 +42,9 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
   const [customStart, setCustomStart] = useState("")
   const [customEnd, setCustomEnd] = useState("")
   const [useCustom, setUseCustom] = useState(false)
-  const [selectedSections, setSelectedSections] = useState<string[]>(sections.map((s) => s.id))
+  const [selectedSections, setSelectedSections] = useState<string[]>(
+    sections.map((s) => s.id)
+  )
 
   const toggleSection = (id: string) => {
     setSelectedSections((prev) =>
@@ -57,6 +59,7 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
       end_date: useCustom ? customEnd : undefined,
       sections: selectedSections,
     }
+
     exportXlsx.mutate(payload, {
       onSuccess: () => {
         onClose()
@@ -150,9 +153,13 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
             >
               Cancel
             </button>
+
             <button
               onClick={handleExport}
-              disabled={exportXlsx.isPending || (useCustom && (!customStart || !customEnd))}
+              disabled={
+                exportXlsx.isPending ||
+                (useCustom && (!customStart || !customEnd))
+              }
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
             >
               <Download className="w-4 h-4" />
@@ -162,5 +169,11 @@ export function ExportModal({ open, onClose }: ExportModalProps) {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Page() {
+  return (
+    <ExportModal open={true} onClose={() => {}} />
   )
 }
