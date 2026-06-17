@@ -12,7 +12,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts"
 
-const periods = ["This Week", "This Month", "Last 30 Days", "Custom"] as const
+const periods = ["All Time", "This Week", "This Month", "Last 30 Days", "Custom"] as const
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 const chartColors = [
@@ -43,7 +43,7 @@ function ChartTooltip({ active, payload, label, currency }: any) {
 export default function AnalyticsPage() {
   const { user } = useAuth()
   const currency = user?.currency ?? "NGN"
-  const [period, setPeriod] = useState<typeof periods[number]>("This Month")
+  const [period, setPeriod] = useState<typeof periods[number]>("All Time")
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
@@ -52,6 +52,15 @@ export default function AnalyticsPage() {
   const dateRange = useMemo(() => {
     const now = new Date()
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    if (period === "All Time") {
+      return{
+        start_date: "",
+        end_date: "",
+        weeks: 52,
+        months:12
+      }
+    }
 
     if (period === "Custom" && startDate && endDate) {
       return {

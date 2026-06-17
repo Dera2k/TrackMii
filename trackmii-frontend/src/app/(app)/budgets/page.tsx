@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useBudgets, useDeleteBudget, useCreateBudget, useUpdateBudget } from "@/hooks/queries/useBudgets"
+import { useBudgets, useCurrentMonthBudgets, useDeleteBudget, useCreateBudget, useUpdateBudget } from "@/hooks/queries/useBudgets"
 import { useCategories } from "@/hooks/queries/useCategories"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { formatCurrency } from "@/lib/utils"
@@ -13,7 +13,7 @@ import type { Budget } from "@/lib/types"
 export default function BudgetsPage() {
   const { user } = useAuth()
   const currency = user?.currency ?? "NGN"
-  const { data: budgets, isLoading } = useBudgets()
+  const { data: budgets, isLoading } = useCurrentMonthBudgets()
   const { data: categories } = useCategories()
   const createMutation = useCreateBudget()
   const updateMutation = useUpdateBudget()
