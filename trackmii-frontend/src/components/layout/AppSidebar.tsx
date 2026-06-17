@@ -1,8 +1,9 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {LayoutDashboard, Receipt, Tag, PiggyBank, BarChart2, ChevronLeft, ChevronRight,} from "lucide-react"
+import { LayoutDashboard, Receipt, Tag, PiggyBank, BarChart2, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -30,10 +31,18 @@ export function AppSidebar({ collapsed, onToggleCollapse }: AppSidebarProps) {
     >
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-sidebar-border shrink-0">
-        {collapsed ? (
-          <span className="text-xl font-bold text-primary mx-auto">T</span>
-        ) : (
-          <span className="text-xl font-bold text-primary tracking-tight">Trackmii</span>
+        <Image
+          src="/logos/trackmii64.png"
+          alt="Trackmii"
+          width={32}
+          height={32}
+          className="w-8 h-8 object-contain shrink-0"
+          priority
+        />
+        {!collapsed && (
+          <span className="ml-2 text-lg font-semibold tracking-tight">
+            Trackmii
+          </span>
         )}
       </div>
 
@@ -51,6 +60,7 @@ export function AppSidebar({ collapsed, onToggleCollapse }: AppSidebarProps) {
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground hover:bg-sidebar-accent/50"
               )}
+              title={collapsed ? label : undefined}
             >
               <Icon size={18} className="shrink-0" />
               {!collapsed && <span>{label}</span>}
@@ -70,5 +80,3 @@ export function AppSidebar({ collapsed, onToggleCollapse }: AppSidebarProps) {
     </aside>
   )
 }
-
-//desktop sidebar. Settings removed — accessed via profile menu in TopBar.

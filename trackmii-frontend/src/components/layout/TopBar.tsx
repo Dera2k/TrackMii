@@ -1,6 +1,7 @@
 "use client"
 
-import { Bell, Sun, Moon, Menu, LogOut, Settings } from "lucide-react"
+import Image from "next/image"
+import { Bell, Sun, Moon, LogOut, Settings } from "lucide-react"
 import { useTheme } from "next-themes"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -46,16 +47,22 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   return (
     <header className="h-16 border-b border-border bg-background flex items-center px-4 gap-3 shrink-0 sticky top-0 z-40">
 
-      {/* Hamburger — mobile only */}
+      {/* Mobile: Logo as menu trigger */}
       {isMobile && (
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
           onClick={onMenuClick}
-          aria-label="Open menu"
+          className="flex items-center p-1.5 rounded-lg hover:bg-accent transition-colors shrink-0"
+          aria-label="Menu"
         >
-          <Menu size={20} />
-        </Button>
+          <Image
+            src="/logos/trackmii32.png"
+            alt="Trackmii"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain"
+            priority
+          />
+        </button>
       )}
 
       {/* Page title */}
@@ -63,6 +70,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
 
       {/* Right actions */}
       <div className="flex items-center gap-1">
+        {/* Theme toggle */}
         <Button
           variant="ghost"
           size="icon"
@@ -143,12 +151,12 @@ export function TopBar({ onMenuClick }: TopBarProps) {
         <div className="relative ml-2">
           <button
             onClick={() => setShowProfile(!showProfile)}
-            className="w-8 h-8"
+            className="w-8 h-8 rounded-lg hover:bg-accent transition-colors"
             aria-label="Profile menu"
           >
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xs">
-              {user?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase() ?? 'U'}
+                {user?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase() ?? 'U'}
               </AvatarFallback>
             </Avatar>
           </button>
@@ -188,6 +196,3 @@ export function TopBar({ onMenuClick }: TopBarProps) {
     </header>
   )
 }
-
-//Sticky header with dark mode toggle, notifications bell with dropdown, and profile menu.
-//Profile menu shows user info, Settings link, and Log out button.
