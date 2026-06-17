@@ -13,6 +13,8 @@ import { useAuth } from "@/lib/contexts/auth-context"
 import { useLogout } from "@/hooks/queries/useAuth"
 import Link from "next/link"
 
+import trackmiiIcon from "@/assets/trackmii32.png";
+
 const pageTitles: Record<string, string> = {
   "/":           "Dashboard",
   "/expenses":   "Expenses",
@@ -55,7 +57,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           aria-label="Menu"
         >
           <Image
-            src="/logos/trackmii32.png"
+            src={trackmiiIcon}
             alt="Trackmii"
             width={32}
             height={32}

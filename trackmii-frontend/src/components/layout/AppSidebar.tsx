@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation"
 import { LayoutDashboard, Receipt, Tag, PiggyBank, BarChart2, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+import trackmiiIcon from "@/assets/trackmii64.png";
+
 const navItems = [
   { href: "/",           label: "Dashboard",  icon: LayoutDashboard },
   { href: "/expenses",   label: "Expenses",   icon: Receipt },
@@ -32,7 +34,7 @@ export function AppSidebar({ collapsed, onToggleCollapse }: AppSidebarProps) {
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b border-sidebar-border shrink-0">
         <Image
-          src="/logos/trackmii64.png"
+          src={trackmiiIcon}
           alt="Trackmii"
           width={32}
           height={32}
