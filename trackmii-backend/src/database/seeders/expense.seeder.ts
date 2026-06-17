@@ -1,79 +1,126 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 
-import { Expense } from "../../modules/expenses/expense.entity"
-import { User } from "../../modules/users/user.entity"
-import { Category } from "../../modules/categories/category.entity"
-import { PaymentMethod } from "../../common/enums/payment-method.enum"
-import { Currency } from "../../common/enums/currency.enum"
+import { Expense } from '../../modules/expenses/expense.entity';
+import { User } from '../../modules/users/user.entity';
+import { Category } from '../../modules/categories/category.entity';
+import { PaymentMethod } from '../../common/enums/payment-method.enum';
+import { Currency } from '../../common/enums/currency.enum';
 
+const SEED_USER_EMAIL = 'exam@exam.com';
+const EXPENSE_COUNT = 500;
+const MONTH_RANGE = 6;
+const MIN_AMOUNT = 500;
+const MAX_AMOUNT = 100_500;
 
 @Injectable()
 export class ExpenseSeeder {
+  private readonly logger = new Logger(ExpenseSeeder.name);
+
   constructor(
-    @InjectRepository(Expense) private expenseRepo: Repository<Expense>,
-    @InjectRepository(User) private userRepo: Repository<User>,
-    @InjectRepository(Category) private categoryRepo: Repository<Category>,
+    @InjectRepository(Expense)
+    private readonly expenseRepo: Repository<Expense>,
+
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+
+    @InjectRepository(Category)
+    private readonly categoryRepo: Repository<Category>,
   ) {}
 
-  async seed() {
-    const user = await this.userRepo.findOne({
-      where: { email: 'exam@exam.com' },
-    });
+  async seed(): Promise<void> {
+    const user = await this.findSeedUser();
 
     if (!user) {
-      console.log('❌ User not found');
+      this.logger.warn(`User not found: ${SEED_USER_EMAIL}`);
       return;
     }
 
-    // Get user categories + default categories
-    const categories = await this.categoryRepo.find({
-      where: [
-        { user_id: user.id },
-        { user_id: IsNull() }, // System defaults
-      ],
-    });
+    const categories = await this.findAvailableCategories(user.id);
 
     if (categories.length === 0) {
-      console.log('❌ No categories found');
+      this.logger.warn('No categories found');
       return;
     }
 
-    const expenses: Partial<Expense>[] = [];
-    const today = new Date();
-    const paymentMethods = Object.values(PaymentMethod);
-    const currencies = Object.values(Currency);
+    await this.expenseRepo.delete({ user_id: user.id });
+    this.logger.log('Cleared existing expenses');
 
-    for (let i = 0; i < 500; i++) {
-      const monthsAgo = Math.floor(Math.random() * 6);
-      const dayOfMonth = Math.floor(Math.random() * 28) + 1;
-      const expenseDate = new Date(
-        today.getFullYear(),
-        today.getMonth() - monthsAgo,
-        dayOfMonth,
-      );
-
-      expenses.push({
-        user_id: user.id,
-        title: `Expense ${i + 1}`,
-        amount: Math.floor(Math.random() * 100000) + 500,
-        currency: currencies[Math.floor(Math.random() * currencies.length)],
-        category_id: categories[Math.floor(Math.random() * categories.length)].id,
-        payment_method:
-          paymentMethods[Math.floor(Math.random() * paymentMethods.length)],
-        expense_date: expenseDate.toISOString().split('T')[0],
-        note: Math.random() > 0.7 ? `Note for expense ${i + 1}` : null,
-        is_deleted: false,
-      });
-    }
+    const expenses = this.buildExpenses(user.id, categories);
 
     try {
       await this.expenseRepo.insert(expenses);
-      console.log(`✅ Seeded ${expenses.length} expenses with ${categories.length} categories`);
+      this.logger.log(
+        `Seeded ${expenses.length} expenses with ${categories.length} categories`,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Error seeding expenses:', message);
+      this.logger.error(`Error seeding expenses: ${message}`);
     }
+  }
+
+  private findSeedUser(): Promise<User | null> {
+    return this.userRepo.findOne({
+      where: { email: SEED_USER_EMAIL },
+    });
+  }
+
+  private findAvailableCategories(userId: string): Promise<Category[]> {
+    return this.categoryRepo.find({
+      where: [{ user_id: userId }, { user_id: IsNull() }],
+    });
+  }
+
+  private buildExpenses(
+    userId: string,
+    categories: Category[],
+  ): Partial<Expense>[] {
+    return Array.from({ length: EXPENSE_COUNT }, (_, index) =>
+      this.buildExpense(index, userId, categories),
+    );
+  }
+
+  private buildExpense(
+    index: number,
+    userId: string,
+    categories: Category[],
+  ): Partial<Expense> {
+    const category = this.pickRandom(categories);
+    const paymentMethod = this.pickRandom(Object.values(PaymentMethod));
+
+    return {
+      user_id: userId,
+      title: `Expense ${index + 1}`,
+      amount: this.randomAmount(),
+      currency: Currency.NGN,
+      category_id: category.id,
+      payment_method: paymentMethod,
+      expense_date: this.randomExpenseDate(),
+      note: Math.random() > 0.7 ? `Note for expense ${index + 1}` : null,
+      is_deleted: false,
+    };
+  }
+
+  private randomAmount(): number {
+    return Math.floor(Math.random() * (MAX_AMOUNT - MIN_AMOUNT)) + MIN_AMOUNT;
+  }
+
+  private randomExpenseDate(): string {
+    const today = new Date();
+    const monthsAgo = Math.floor(Math.random() * MONTH_RANGE);
+    const dayOfMonth = Math.floor(Math.random() * 28) + 1;
+
+    const date = new Date(
+      today.getFullYear(),
+      today.getMonth() - monthsAgo,
+      dayOfMonth,
+    );
+
+    return date.toISOString().split('T')[0];
+  }
+
+  private pickRandom<T>(items: T[]): T {
+    return items[Math.floor(Math.random() * items.length)];
   }
 }
