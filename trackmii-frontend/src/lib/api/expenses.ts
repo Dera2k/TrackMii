@@ -47,6 +47,8 @@ export async function getExpenses(
   if (filters.payment_method) params.append("payment_method", filters.payment_method)
   if (filters.start_date) params.append("start_date", filters.start_date)
   if (filters.end_date) params.append("end_date", filters.end_date)
+  params.append("sort_by", "date")
+  params.append("sort_order", "DESC")
 
   return handleApiCall(() => apiClient(`/expenses?${params.toString()}`))
 }

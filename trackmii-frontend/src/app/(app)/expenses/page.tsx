@@ -190,9 +190,10 @@ export default function ExpensesPage() {
               <div className="flex items-center gap-3 min-w-0">
                 <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: e.category?.color ?? "#999" }} />
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{e.title}</p>
+                  <p className="text-sm font-medium truncate">{e.category?.name ?? "Uncategorized"}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{e.category?.name ?? "Uncategorized"}</span>
+                    <span className="text-xs text-muted-foreground">{e.title}</span>
+                    <span className="text-xs text-muted-foreground">•</span>
                     <span className="text-xs text-muted-foreground">{e.expense_date}</span>
                   </div>
                   {e.note && <p className="text-xs text-muted-foreground mt-1 truncate">{e.note}</p>}
