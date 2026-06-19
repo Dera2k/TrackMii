@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Trackmii
 
-## Getting Started
+Smart expense tracker with budgets, analytics and insights.
 
-First, run the development server:
+## Features
+
+- Track expenses by category and payment method
+- Set monthly budgets and get alerts when you're close to limit
+- View spending analytics with charts and trends
+- Export data to XLSX
+- Dark mode support
+- Multi-currency support
+
+## Tech Stack
+
+- **Frontend**: Next.js 16, React, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: NestJS, MySQL, TypeORM
+- **State**: React Query, Zustand
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+
+- PostgreSQL
+
+### Frontend
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd trackmii-frontend
+pnpm install
+pnpm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Frontend runs on `http://localhost:3001`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Backend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd trackmii-backend
+pnpm install
+pnpm dev
+```
 
-## Learn More
+Backend runs on `http://localhost:3000`
 
-To learn more about Next.js, take a look at the following resources:
+### Database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create a `.env` file in `trackmii-backend`:
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=yourpassword
+DB_DATABASE=trackmii
+Then seed data:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm run seed
+```
 
-## Deploy on Vercel
+## Environment Variables
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Frontend** (`trackmii-frontend/.env.local`):
+NEXT_PUBLIC_API_URL=http://localhost:3000
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Backend** (`trackmii-backend/.env`):
+NODE_ENV=development
+
+PORT=3000
+
+DB_HOST=mysql
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=rootpassword
+DB_DATABASE=trackmii
+JWT_SECRET=your-secret-key
+JWT_EXPIRATION=7d
+FRONTEND_URL=http://localhost:3001
+
+## Deploy
+
+[aadd deployment links after deploying]
