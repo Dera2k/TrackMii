@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { IsNull, Repository } from 'typeorm';
 
 import { Expense } from '../../modules/expenses/expense.entity';
@@ -8,7 +9,6 @@ import { Category } from '../../modules/categories/category.entity';
 import { PaymentMethod } from '../../common/enums/payment-method.enum';
 import { Currency } from '../../common/enums/currency.enum';
 
-const SEED_USER_EMAIL = 'exam@exam.com';
 const EXPENSE_COUNT = 500;
 const MONTH_RANGE = 6;
 const MIN_AMOUNT = 500;
@@ -17,6 +17,7 @@ const MAX_AMOUNT = 100_500;
 @Injectable()
 export class ExpenseSeeder {
   private readonly logger = new Logger(ExpenseSeeder.name);
+  private readonly seedEmail: string;
 
   constructor(
     @InjectRepository(Expense)
@@ -27,13 +28,17 @@ export class ExpenseSeeder {
 
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
-  ) {}
+
+    private readonly configService: ConfigService,
+  ) {
+    this.seedEmail = this.configService.get('SEED_USER_EMAIL') || 'demo@example.com';
+  }
 
   async seed(): Promise<void> {
     const user = await this.findSeedUser();
 
     if (!user) {
-      this.logger.warn(`User not found: ${SEED_USER_EMAIL}`);
+      this.logger.warn(`User not found: ${this.seedEmail}`);
       return;
     }
 
@@ -62,7 +67,7 @@ export class ExpenseSeeder {
 
   private findSeedUser(): Promise<User | null> {
     return this.userRepo.findOne({
-      where: { email: SEED_USER_EMAIL },
+      where: { email: this.seedEmail },
     });
   }
 
