@@ -48,24 +48,38 @@ export interface CategoryBreakdownResponse {
   data: CategoryBreakdown[]
 }
 
+async function handleApiCall<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn()
+  } catch (error: any) {
+    if (error.statusCode === 401) throw new Error("Session expired. Please log in again.")
+    if (error.statusCode === 403) throw new Error("You don't have permission.")
+    if (error.statusCode === 404) throw new Error("Not found.")
+    if (error.statusCode >= 500) throw new Error("Server error. Try again later.")
+    throw new Error(error.message || "Something went wrong.")
+  }
+}
+
 export async function getDashboardStats(): Promise<DashboardStats> {
-  return apiClient("/analytics/dashboard")
+  return handleApiCall(() => apiClient("/analytics/dashboard"))
 }
 
 export async function getMonthlyTrends(months: number = 6): Promise<MonthlyTrendsResponse> {
-  return apiClient(`/analytics/monthly?months=${months}`)
+  return handleApiCall(() => apiClient(`/analytics/monthly?months=${months}`))
 }
 
 export async function getWeeklyTrends(weeks: number = 8): Promise<WeeklyTrendsResponse> {
-  return apiClient(`/analytics/weekly?weeks=${weeks}`)
+  return handleApiCall(() => apiClient(`/analytics/weekly?weeks=${weeks}`))
 }
 
 export async function getCategoryBreakdown(
   startDate?: string,
   endDate?: string
 ): Promise<CategoryBreakdownResponse> {
-  const params = new URLSearchParams()
-  if (startDate) params.append("start_date", startDate)
-  if (endDate) params.append("end_date", endDate)
-  return apiClient(`/analytics/category-breakdown?${params.toString()}`)
+  return handleApiCall(() => {
+    const params = new URLSearchParams()
+    if (startDate) params.append("start_date", startDate)
+    if (endDate) params.append("end_date", endDate)
+    return apiClient(`/analytics/category-breakdown?${params.toString()}`)
+  })
 }
