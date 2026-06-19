@@ -1,19 +1,21 @@
+// src/modules/users/users.service.ts
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User } from "./user.entity";
 import { UpdateProfileDto } from "./dtos/update-profile.dto";
 import { UpdatePreferencesDto } from "./dtos/update-preferences.dto";
+import { UpdatePasswordDto } from "./dtos/update-password.dto";
 import { UserResponseDto } from "./dtos/user-response.dto";
+import { AuthService } from "../auth/auth.service";
 
-import { Injectable } from "@nestjs/common";
-import { NotFoundException } from "@nestjs/common";
-import { ConflictException } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from "@nestjs/common";
 
 @Injectable()
 export class UsersService {
     constructor(
         @InjectRepository(User)
         private userRepo: Repository<User>,
+        private authService: AuthService,
     ) {}
 
     async findById(userId: string): Promise<User> {
@@ -79,6 +81,24 @@ export class UsersService {
     await this.userRepo.save(user);
 
     return this.toResponseDto(user);
+  }
+
+  async updatePassword(
+    userId: string,
+    dto: UpdatePasswordDto,
+  ): Promise<void> {
+    const user = await this.findById(userId);
+
+    const isPasswordValid = await this.authService.comparePassword(
+      dto.current_password,
+      user.password || '',
+    );
+    if (!isPasswordValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    user.password = await this.authService.hashPassword(dto.new_password);
+    await this.userRepo.save(user);
   }
 
   toResponseDto(user: User): UserResponseDto {

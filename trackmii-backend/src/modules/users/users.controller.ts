@@ -1,8 +1,10 @@
+// src/modules/users/users.controller.ts
 import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth,} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { UpdatePreferencesDto } from './dtos/update-preferences.dto';
+import { UpdatePasswordDto } from './dtos/update-password.dto';
 import { UserResponseDto } from './dtos/user-response.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -55,5 +57,21 @@ export class UsersController {
     @Body() dto: UpdatePreferencesDto,
   ): Promise<UserResponseDto> {
     return this.usersService.updatePreferences(user.id, dto);
+  }
+
+  @Put('password')
+  @ApiOperation({ summary: 'Update password' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password updated successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 400, description: 'Invalid current password' })
+  async updatePassword(
+    @CurrentUser() user: any,
+    @Body() dto: UpdatePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.usersService.updatePassword(user.id, dto);
+    return { message: 'Password updated successfully' };
   }
 }

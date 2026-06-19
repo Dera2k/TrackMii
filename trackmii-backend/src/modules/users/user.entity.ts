@@ -1,3 +1,4 @@
+// src/modules/users/user.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -12,7 +13,6 @@ import { Currency } from '../../common/enums/currency.enum';
 import { Category } from '../categories/category.entity';
 import { Expense } from '../expenses/expense.entity';
 import { Notification } from '../notifications/notification.entity';
-
 
 @Entity('users')
 export class User {
@@ -58,8 +58,6 @@ export class User {
   @UpdateDateColumn()
   updated_at!: Date;
 
-
-  //relationships
   @OneToMany(() => Expense, (expense) => expense.user)
   expenses!: Expense[];
 
