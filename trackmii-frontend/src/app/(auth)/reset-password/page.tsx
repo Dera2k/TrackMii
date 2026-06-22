@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
@@ -22,7 +23,7 @@ const resetSchema = z.object({
 
 type ResetValues = z.infer<typeof resetSchema>
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const searchParams = useSearchParams()
   const token = searchParams.get("token") ?? ""
   const mutation = useResetPassword()
@@ -106,5 +107,13 @@ export default function ResetPasswordPage() {
         </Link>
       </CardFooter>
     </Card>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="text-center">Loading...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }
