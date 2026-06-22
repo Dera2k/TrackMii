@@ -12,9 +12,13 @@ async function bootstrap() {
 
     //cors
     app.enableCors({
-        origin: 'http://localhost:3001',
-        Credentials: true,
-    });
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://trackmii.vercel.app',
+  ],
+  credentials: true,
+});
     //global prefix
     app.setGlobalPrefix('api/v1');
 
