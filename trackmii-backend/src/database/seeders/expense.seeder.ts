@@ -9,7 +9,7 @@ import { Category } from '../../modules/categories/category.entity';
 import { PaymentMethod } from '../../common/enums/payment-method.enum';
 import { Currency } from '../../common/enums/currency.enum';
 
-const EXPENSE_COUNT = 500;
+const EXPENSE_COUNT = 100;
 const MONTH_RANGE = 6;
 const MIN_AMOUNT = 500;
 const MAX_AMOUNT = 100_500;
