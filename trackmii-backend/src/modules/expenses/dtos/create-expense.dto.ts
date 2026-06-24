@@ -1,13 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsNumber,
-  IsUUID,
-  IsOptional,
-  IsDateString,
-  IsEnum,
-} from 'class-validator';
-
+import { IsString, IsNumber, IsUUID, IsOptional, IsDateString, IsEnum, Min, Max } from 'class-validator';
 
 import { Currency } from '../../../common/enums/currency.enum';
 import { PaymentMethod } from '../../../common/enums/payment-method.enum';
@@ -25,8 +17,9 @@ export class CreateExpenseDto {
     description: 'Expense amount',
   })
   @IsNumber()
+  @Min(1, { message: 'Amount must be greater than 0' })
+  @Max(999999999, { message: 'Amount exceeds maximum limit' })
   amount!: number;
-
 
   @IsEnum(Currency)
   @ApiProperty({
@@ -43,7 +36,6 @@ export class CreateExpenseDto {
   @IsUUID()
   category_id!: string;
 
-
   @IsEnum(PaymentMethod)
   @ApiProperty({
     enum: PaymentMethod,
@@ -51,8 +43,6 @@ export class CreateExpenseDto {
     description: 'Payment method used',
   })
   payment_method!: PaymentMethod;
-
-
 
   @ApiProperty({
     example: '2026-04-20',
