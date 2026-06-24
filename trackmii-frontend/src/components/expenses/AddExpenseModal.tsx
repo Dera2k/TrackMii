@@ -31,7 +31,6 @@ export function AddExpenseModal({ open, onClose, expense }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    
     if (expense) {
       setTitle(expense.title)
       setAmount(expense.amount.toString())
@@ -56,6 +55,7 @@ export function AddExpenseModal({ open, onClose, expense }: Props) {
     const e: Record<string, string> = {}
     if (!title.trim()) e.title = "Title is required"
     if (!amount || parseFloat(amount) <= 0) e.amount = "Enter a valid amount"
+    if (!categoryId) e.category = "Category is required"
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -148,13 +148,13 @@ export function AddExpenseModal({ open, onClose, expense }: Props) {
             </Field>
           </div>
 
-          <Field label="Category">
+          <Field label="Category" error={errors.category}>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
             >
-              <option value="">No category</option>
+              <option value="">Select a category</option>
               {categories?.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
