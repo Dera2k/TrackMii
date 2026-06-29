@@ -67,7 +67,7 @@ export function AddExpenseModal({ open, onClose, expense }: Props) {
       title,
       amount: parseFloat(amount),
       currency,
-      category_id: categoryId || null,
+      category_id: categoryId || undefined,
       payment_method: paymentMethod,
       expense_date: date,
       note: note || undefined,
