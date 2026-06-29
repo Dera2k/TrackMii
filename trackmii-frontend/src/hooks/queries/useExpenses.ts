@@ -47,14 +47,21 @@ export function useUpdateExpense() {
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ["expenses"] })
       const previous = queryClient.getQueryData(["expenses"])
-      queryClient.setQueryData(["expenses"], (old: any) => ({
-        ...old,
-        data: old.data.map((e: Expense) => (e.id === id ? { ...e, ...data } : e)),
-      }))
+      
+      // Only update cache if data exists
+      if (previous) {
+        queryClient.setQueryData(["expenses"], (old: any) => ({
+          ...old,
+          data: old.data.map((e: Expense) => (e.id === id ? { ...e, ...data } : e)),
+        }))
+      }
+      
       return { previous }
     },
     onError: (error: any, variables, context: any) => {
-      queryClient.setQueryData(["expenses"], context.previous)
+      if (context.previous) {
+        queryClient.setQueryData(["expenses"], context.previous)
+      }
       toast.error(error.message || "Failed to update expense")
     },
     onSuccess: () => {
