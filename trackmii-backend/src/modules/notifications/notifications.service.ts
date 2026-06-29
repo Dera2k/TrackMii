@@ -106,4 +106,17 @@ export class NotificationsService {
       created_at: notification.created_at,
     };
   }
+
+  async delete(userId: string, notificationId: string): Promise<void> {
+  await this.notificationRepo.delete({
+    user_id: userId,
+    id: notificationId,
+  });
+}
+
+async deleteAll(userId: string): Promise<void> {
+  await this.notificationRepo.delete({
+    user_id: userId,
+  });
+}
 }

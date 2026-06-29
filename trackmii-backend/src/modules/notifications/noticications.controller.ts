@@ -2,8 +2,10 @@ import {
   Controller,
   Get,
   Put,
+  Delete,
   Body,
   Query,
+  Param,
   UseGuards,
   ParseBoolPipe,
 } from '@nestjs/common';
@@ -80,5 +82,32 @@ export class NotificationsController {
 
     await this.notificationsService.markAsRead(user.id, dto.notification_ids);
     return { message: 'Notifications marked as read' };
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a notification' })
+  @ApiResponse({
+    status: 200,
+    description: 'Notification deleted',
+  })
+  async deleteNotification(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+  ): Promise<{ message: string }> {
+    await this.notificationsService.delete(user.id, id);
+    return { message: 'Notification deleted' };
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Delete all notifications' })
+  @ApiResponse({
+    status: 200,
+    description: 'All notifications deleted',
+  })
+  async deleteAll(
+    @CurrentUser() user: any,
+  ): Promise<{ message: string }> {
+    await this.notificationsService.deleteAll(user.id);
+    return { message: 'All notifications deleted' };
   }
 }
