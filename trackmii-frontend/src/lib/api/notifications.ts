@@ -30,3 +30,19 @@ export async function markNotificationsRead(ids: string[]): Promise<void> {
     })
   )
 }
+
+export async function deleteNotification(id: string): Promise<void> {
+  return handleApiCall(() =>
+    apiClient(`/notifications/${id}`, {
+      method: "DELETE",
+    })
+  )
+}
+
+export async function deleteAllNotifications(): Promise<void> {
+  return handleApiCall(() =>
+    apiClient("/notifications", {
+      method: "DELETE",
+    })
+  )
+}

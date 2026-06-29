@@ -1,14 +1,14 @@
 "use client"
 
 import Image from "next/image"
-import { Bell, Sun, Moon, LogOut, Settings } from "lucide-react"
+import { Bell, Sun, Moon, LogOut, Settings, Trash2, Check } from "lucide-react"
 import { useTheme } from "next-themes"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { useNotifications, useUnreadCount, useMarkNotificationsRead } from "@/hooks/queries/useNotifications"
+import { useNotifications, useUnreadCount, useMarkNotificationsRead, useDeleteNotification, useDeleteAllNotifications } from "@/hooks/queries/useNotifications"
 import { useAuth } from "@/lib/contexts/auth-context"
 import { useLogout } from "@/hooks/queries/useAuth"
 import Link from "next/link"
@@ -38,12 +38,23 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   const { data: unreadCount = 0 } = useUnreadCount()
   const { data: notifications = [] } = useNotifications()
   const markRead = useMarkNotificationsRead()
+  const deleteOne = useDeleteNotification()
+  const deleteAll = useDeleteAllNotifications()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
 
   const handleMarkAllRead = () => {
     markRead.mutate([])
-    setShowNotifications(false)
+  }
+
+  const handleDeleteOne = (id: string) => {
+    deleteOne.mutate(id)
+  }
+
+  const handleDeleteAll = () => {
+    if (window.confirm("Delete all notifications?")) {
+      deleteAll.mutate()
+    }
   }
 
   return (
@@ -102,6 +113,15 @@ export function TopBar({ onMenuClick }: TopBarProps) {
             <div className="absolute right-0 top-12 w-96 bg-popover border border-border rounded-xl shadow-xl z-50">
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <h3 className="font-semibold text-sm">Notifications</h3>
+                {notifications.length > 0 && (
+                  <button
+                    onClick={handleDeleteAll}
+                    className="p-1 rounded hover:bg-accent transition-colors"
+                    aria-label="Delete all"
+                  >
+                    <Trash2 size={14} className="text-muted-foreground" />
+                  </button>
+                )}
               </div>
 
               {notifications.length === 0 ? (
@@ -113,37 +133,49 @@ export function TopBar({ onMenuClick }: TopBarProps) {
                   <p className="text-xs text-muted-foreground mt-1">No new notifications</p>
                 </div>
               ) : (
-                <div className="max-h-96 overflow-y-auto divide-y divide-border">
-                  {notifications.map((n) => (
-                    <div 
-                      key={n.id} 
-                      className={`p-4 hover:bg-accent transition-colors ${!n.is_read ? 'bg-accent/50' : ''}`}
-                    >
-                      <div className="flex gap-3">
-                        <div className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${!n.is_read ? 'bg-primary' : 'bg-muted'}`} />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm leading-tight">{n.title}</p>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.message}</p>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {new Date(n.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <>
                   {unreadCount > 0 && (
-                    <div className="p-3 border-t border-border">
+                    <div className="px-4 py-3 border-b border-border flex gap-2">
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         onClick={handleMarkAllRead}
-                        className="w-full text-xs"
+                        disabled={markRead.isPending}
+                        className="flex-1 text-xs h-8"
                       >
-                        Mark all as read
+                        <Check size={14} className="mr-1" />
+                        {markRead.isPending ? "Marking..." : "Mark all as read"}
                       </Button>
                     </div>
                   )}
-                </div>
+                  <div className="max-h-96 overflow-y-auto divide-y divide-border">
+                    {notifications.map((n) => (
+                      <div 
+                        key={n.id} 
+                        className={`p-4 hover:bg-accent transition-colors group ${!n.is_read ? 'bg-accent/50' : ''}`}
+                      >
+                        <div className="flex gap-3">
+                          <div className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${!n.is_read ? 'bg-primary' : 'bg-muted'}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm leading-tight">{n.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{n.message}</p>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {new Date(n.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteOne(n.id)}
+                            disabled={deleteOne.isPending}
+                            className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/10 transition-all shrink-0"
+                            aria-label="Delete"
+                          >
+                            <Trash2 size={14} className="text-destructive" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           )}

@@ -5,7 +5,10 @@ import {
   getNotifications,
   getUnreadCount,
   markNotificationsRead,
+  deleteNotification,
+  deleteAllNotifications,
 } from "@/lib/api/notifications"
+import { toast } from "sonner"
 
 export function useNotifications() {
   return useQuery({
@@ -34,6 +37,36 @@ export function useMarkNotificationsRead() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] })
       queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] })
+    },
+  })
+}
+
+export function useDeleteNotification() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] })
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] })
+      toast.success("Notification deleted")
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete notification")
+    },
+  })
+}
+
+export function useDeleteAllNotifications() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteAllNotifications,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] })
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] })
+      toast.success("All notifications deleted")
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete notifications")
     },
   })
 }
