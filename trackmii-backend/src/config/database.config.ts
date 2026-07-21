@@ -5,7 +5,7 @@ export const getDatabaseConfig = (
   configService: ConfigService,
   
 ): TypeOrmModuleOptions => ({
-  type: 'mysql',
+  type: 'postgres',
   host: configService.get('DB_HOST'),
   port: configService.get('DB_PORT'),
   username: configService.get('DB_USERNAME'),
