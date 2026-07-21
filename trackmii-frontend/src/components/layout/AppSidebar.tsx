@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 import trackmiiIcon from "@/assets/trackmii64.png";
 
 const navItems = [
-  { href: "/",           label: "Dashboard",  icon: LayoutDashboard },
+  { href: "/dashboard",  label: "Dashboard",  icon: LayoutDashboard },
   { href: "/expenses",   label: "Expenses",   icon: Receipt },
   { href: "/categories", label: "Categories", icon: Tag },
   { href: "/budgets",    label: "Budgets",    icon: PiggyBank },

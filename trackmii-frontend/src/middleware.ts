@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-const PUBLIC_PATHS = ["/","/login", "/register", "/forgot-password", "/reset-password"]
+const PUBLIC_PATHS = ["/", "/login", "/register", "/forgot-password", "/reset-password"]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -13,8 +13,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  if (token && isPublicPath) {
-    return NextResponse.redirect(new URL("/", request.url))
+  if (token && isPublicPath && pathname !== "/") {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   return NextResponse.next()
@@ -23,5 +23,3 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }
-
-//Writes the token to both localStorage (for the API client) and a cookie (for middleware to read). Both stay in sync. The cookie has a 7-day expiry and SameSite=Lax for security.

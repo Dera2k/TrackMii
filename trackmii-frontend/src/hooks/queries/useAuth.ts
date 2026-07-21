@@ -25,8 +25,11 @@ export function useLogin() {
     mutationFn: login,
     onSuccess: (data) => {
       toast.success(`Welcome back, ${data.user.name}`)
-      router.push("/")
-    },
+  // wait a tick for cookie to be set then redirect
+    setTimeout(() => {
+      router.push("/dashboard")
+    }, 100)
+},
     onError: (error) => {
       toast.error(getErrorMessage(error))
     },
@@ -40,7 +43,7 @@ export function useRegister() {
     mutationFn: register,
     onSuccess: (data) => {
       toast.success("Account created successfully")
-      router.push("/")
+      router.push("/login")
     },
     onError: (error) => {
       toast.error(getErrorMessage(error))
