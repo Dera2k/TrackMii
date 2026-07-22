@@ -16,7 +16,7 @@ Modular monolith with clear separation of concerns:
 
 - **HTTP Layer:** NestJS controllers → ValidationPipe validates DTOs
 - **Business Logic:** Services contain all domain logic (budget calculations, notifications, alerts)
-- **Data Access:** TypeORM repositories with TypeScript entities
+- **Data Access:** Data Access: TypeORM repositories backed by PostgreSQL (Supabase) with TypeScript entities
 - **Authentication:** JWT strategy validates tokens, JwtAuthGuard enforces protected routes
 - **Response Handling:** TransformInterceptor wraps responses, HttpExceptionFilter catches errors
 
@@ -49,7 +49,7 @@ Modular monolith with clear separation of concerns:
 | Language         | TypeScript                         |
 | Framework        | NestJS 10+                         |
 | Runtime          | Node.js 18+                        |
-| Database         | MySQL 8.0                          |
+| Database         | PostgreSQL (Supabase)              |
 | ORM              | TypeORM                            |
 | Auth             | JWT + Passport                     |
 | Validation       | class-validator, class-transformer |
@@ -101,7 +101,7 @@ pnpm install
 cp .env.example .env
 # Edit .env with your values
 
-# Start MySQL via Docker
+# (Optional) Start PostgreSQL locally with Docker
 docker compose up -d
 
 # Start dev server
@@ -117,11 +117,11 @@ Docs: `http://localhost:3000/api/v1/docs`
 | ---------------- | ---------------------------- | ----------------------- |
 | `NODE_ENV`       | Runtime                      | `development`           |
 | `PORT`           | Server port                  | `3000`                  |
-| `DB_HOST`        | MySQL host                   | `localhost`             |
-| `DB_PORT`        | MySQL port                   | `3306`                  |
-| `DB_USERNAME`    | MySQL user                   | `root`                  |
-| `DB_PASSWORD`    | MySQL password               | `rootpassword`          |
-| `DB_DATABASE`    | Database name                | `trackmii`              |
+| `DB_HOST`        | PostgreSQL host              | `localhost`             |
+| `DB_PORT`        | PostgreSQL port              | `3306`                  |
+| `DB_USERNAME`    | PostgreSQL user              | `root`                  |
+| `DB_PASSWORD`    | PostgreSQL password          | `rootpassword`          |
+| `DB_DATABASE`    | PostgreSQL database          | `trackmii`              |
 | `JWT_SECRET`     | Token signing (min 32 chars) | `your-secret-key-here`  |
 | `JWT_EXPIRATION` | Token lifetime               | `7d`                    |
 | `FRONTEND_URL`   | CORS origin                  | `http://localhost:5173` |
@@ -444,46 +444,20 @@ docker compose logs -f app
 docker compose down
 ```
 
-### Railway
+### Deployed
 
-```bash
-railway login
-railway up
-railway logs
-```
-
-Or connect GitHub repo to Railway dashboard and auto-deploy on push.
+Backend: Render
+Frontend: Vercel
+Database: Supabase PostgreSQL
 
 ## Known Limitations
 
-- Email sending not implemented (console output only)
 - No recurring expenses
 - No receipt uploads
 - No OAuth (email/password only)
 - No admin panel
-- No PDF export (CSV only)
+- No PDF export
 - Weekly/monthly summary emails deferred
-
-## Roadmap
-
-**v1.1:**
-
-- Email integration for password reset
-- Expense categorization via AI
-
-**v2.0:**
-
-- OAuth authentication
-- Recurring expenses
-- Receipt image upload/OCR
-- Admin dashboard
-- Summary emails
-
-**v3.0:**
-
-- SMS bank alert parsing
-- Multi-currency support with live rates
-- Mobile app (React Native)
 
 ## Testing
 
@@ -512,8 +486,8 @@ Requires: License and copyright notice included.
 
 **Chidera Nwogu**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+- GitHub: [Dera2k](https://github.com/Dera2k)
+- Email: dera_nwogu@yahoo.com
 
 ---
 

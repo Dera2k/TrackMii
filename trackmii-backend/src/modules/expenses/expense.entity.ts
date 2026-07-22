@@ -30,13 +30,17 @@ export class Expense {
   @Column({ type: 'varchar', length: 255 })
   title!: string;
 
-  @Column({ type: 'decimal', precision: 15, scale: 2, unsigned: true })
+  @Column({ type: 'decimal', precision: 15, scale: 2 })
   amount!: number;
 
   @Column({ type: 'enum', enum: Currency })
   currency!: Currency;
 
-  @Column({ type: 'enum', enum: PaymentMethod, default: PaymentMethod.CASH })
+  @Column({
+    type: 'enum',
+    enum: PaymentMethod,
+    default: PaymentMethod.CASH,
+  })
   payment_method!: PaymentMethod;
 
   @Column({ type: 'date' })
@@ -54,9 +58,10 @@ export class Expense {
   @UpdateDateColumn()
   updated_at!: Date;
 
-
-  //relationships
-  @ManyToOne(() => User, (user) => user.expenses, { onDelete: 'CASCADE' })
+  // Relationships
+  @ManyToOne(() => User, (user) => user.expenses, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id' })
   user!: User;
 

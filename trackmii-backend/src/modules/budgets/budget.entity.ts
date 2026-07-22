@@ -25,13 +25,13 @@ export class Budget {
   @Column({ type: 'uuid', nullable: true })
   category_id?: string | null;
 
-  @Column({ type: 'decimal', precision: 15, scale: 2, unsigned: true })
+  @Column({ type: 'decimal', precision: 15, scale: 2 })
   amount!: number;
 
   @Column({ type: 'enum', enum: Currency })
   currency!: Currency;
 
-  @Column({ type: 'tinyint' })
+  @Column({ type: 'smallint' })
   month!: number;
 
   @Column({ type: 'smallint' })
@@ -43,9 +43,10 @@ export class Budget {
   @UpdateDateColumn()
   updated_at!: Date;
 
-
-  //relationships
-  @ManyToOne(() => User, (user) => user.budgets, { onDelete: 'CASCADE' })
+  // Relationships
+  @ManyToOne(() => User, (user) => user.budgets, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'user_id' })
   user!: User;
 
