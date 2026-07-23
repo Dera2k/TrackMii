@@ -10,11 +10,13 @@ export const getDatabaseConfig = (
   username: configService.get('DB_USERNAME'),
   password: configService.get('DB_PASSWORD'),
   database: configService.get('DB_DATABASE'),
-  ssl: {
-    rejectUnauthorized: false,
-  },
+
+  ssl:
+    configService.get('DB_SSL') === 'true'
+      ? { rejectUnauthorized: false }
+      : false,
+
   autoLoadEntities: true,
-  migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
   synchronize: configService.get('NODE_ENV') === 'development',
   logging: false,
 });
