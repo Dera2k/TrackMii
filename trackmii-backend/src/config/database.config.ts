@@ -17,6 +17,6 @@ export const getDatabaseConfig = (
       : false,
 
   autoLoadEntities: true,
-  synchronize: configService.get('NODE_ENV') === 'development',
+  synchronize: false, //configService.get('NODE_ENV') === 'development',
   logging: false,
 });
