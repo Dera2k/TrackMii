@@ -7,7 +7,12 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get("trackmii_token")?.value
 
-  const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
+  const isPublicPath =
+  pathname === "/" ||
+  pathname === "/login" ||
+  pathname === "/register" ||
+  pathname === "/forgot-password" ||
+  pathname.startsWith("/reset-password")
 
   if (!token && !isPublicPath) {
     return NextResponse.redirect(new URL("/login", request.url))
